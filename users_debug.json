@@ -1,0 +1,23 @@
+{"users": [
+{
+  "localId": "6MTs9L7LUZPLrjn2VVrkD6hjArk1",
+  "email": "teste@gmail.com",
+  "emailVerified": false,
+  "passwordHash": "oPsiGeKde9dY78v7dK833HLLr0Xm5No9V+Sco9XKUg1jWaAI04NWOnfGIDf4oIG14xSykQJpKPmZcBs4u73ORg==",
+  "salt": "+MMGd79BD4ZQvg==",
+  "displayName": "Sarah Ramos",
+  "lastSignedInAt": "1761064637060",
+  "createdAt": "1761064637060",
+  "providerUserInfo": []
+},
+{
+  "localId": "mqardFJtfKVq9vyMG3sxojagzic2",
+  "email": "ryanrogeroliveira@gmail.com",
+  "emailVerified": false,
+  "passwordHash": "EhdbLRA7C8QxZbB1KOxsnVvLW2wRv3DWqVTs/o30GLWofBU2VxIMrjgGd4AE0ew2RwJDEJb2sZzDb+DEYMwNrQ==",
+  "salt": "O0EMZKOe1BtBBA==",
+  "displayName": "Sarah Ramos",
+  "lastSignedInAt": "1761066284083",
+  "createdAt": "1761064849782",
+  "providerUserInfo": []
+}]}

@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== TEMPORARY DEBUG RULES - MORE PERMISSIVE =====
+    // Allow authenticated users to read/write their own documents
+    match /{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null;
+    }
+
+    // ===== USERS COLLECTION =====
+    match /users/{userId} {
+      // Allow users to read/write their own profile
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Allow creating user profile during registration
+      allow create: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ===== CLIENTS COLLECTION =====
+    match /clients/{clientId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ===== APPOINTMENTS COLLECTION =====
+    match /appointments/{appointmentId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ===== TREATMENTS COLLECTION =====
+    match /treatments/{treatmentId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ===== TRANSACTIONS COLLECTION =====
+    match /transactions/{transactionId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ===== CAMPAIGNS COLLECTION =====
+    match /campaigns/{campaignId} {
+      // Allow professionals and admins to access campaigns
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null;
+    }
+  }
+}
