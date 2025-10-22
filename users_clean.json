@@ -1,20 +1,2 @@
-{
-  "users": [
-    {
-      "email": "teste@gmail.com",
-      "emailVerified": false,
-      "displayName": "Sarah Ramos",
-      "passwordHash": "oPsiGeKde9dY78v7dK833HLLr0Xm5No9V+Sco9XKUg1jWaAI04NWOnfGIDf4oIG14xSykQJpKPmZcBs4u73ORg==",
-      "salt": "+MMGd79BD4ZQvg==",
-      "disabled": false
-    },
-    {
-      "email": "ryanrogeroliveira@gmail.com",
-      "emailVerified": false,
-      "displayName": "Sarah Ramos",
-      "passwordHash": "EhdbLRA7C8QxZbB1KOxsnVvLW2wRv3DWqVTs/o30GLWofBU2VxIMrjgGd4AE0ew2RwJDEJb2sZzDb+DEYMwNrQ==",
-      "salt": "O0EMZKOe1BtBBA==",
-      "disabled": false
-    }
-  ]
-}
+{"users": [
+]}

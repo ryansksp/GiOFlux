@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { base44 } from "@/api/base44Client";
+import { databaseService } from "@/services/database";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -14,6 +14,8 @@ import { ptBR } from "date-fns/locale";
 
 import { motion, AnimatePresence } from "framer-motion";
 
+import { useAuth } from "../contexts/AuthContext";
+
 
 
 import AppointmentForm from "../components/agenda/AppointmentForm";
@@ -25,93 +27,58 @@ import WeekView from "../components/agenda/WeekView";
 
 
 export default function Agenda() {
-
   const [currentDate, setCurrentDate] = useState(new Date());
-
   const [showForm, setShowForm] = useState(false);
-
   const [editingAppointment, setEditingAppointment] = useState(null);
-
   const [viewMode, setViewMode] = useState("week");
 
-
-
+  const { userProfile } = useAuth();
   const queryClient = useQueryClient();
 
-
-
   const { data: agendamentos = [], isLoading } = useQuery({
-
     queryKey: ['agendamentos'],
-
-    queryFn: () => base44.entities.Agendamento.list('-data_hora'),
-
+    queryFn: async () => {
+      const result = await databaseService.getAppointments(userProfile?.uid, { orderBy: 'data_hora', orderDirection: 'desc' });
+      return result.success ? result.data : [];
+    },
     initialData: [],
-
+    enabled: !!userProfile,
   });
-
-
 
   const { data: clientes = [] } = useQuery({
-
     queryKey: ['clientes'],
-
-    queryFn: () => base44.entities.Cliente.list(),
-
+    queryFn: async () => {
+      const result = await databaseService.getClients(userProfile?.uid);
+      return result.success ? result.data : [];
+    },
     initialData: [],
-
+    enabled: !!userProfile,
   });
-
-
 
   const createMutation = useMutation({
-
-    mutationFn: (data) => base44.entities.Agendamento.create(data),
-
+    mutationFn: (data) => databaseService.createAppointment({ ...data, userId: userProfile?.uid }),
     onSuccess: () => {
-
       queryClient.invalidateQueries({ queryKey: ['agendamentos'] });
-
       setShowForm(false);
-
       setEditingAppointment(null);
-
     },
-
   });
-
-
 
   const updateMutation = useMutation({
-
-    mutationFn: ({ id, data }) => base44.entities.Agendamento.update(id, data),
-
+    mutationFn: ({ id, data }) => databaseService.updateAppointment(id, data),
     onSuccess: () => {
-
       queryClient.invalidateQueries({ queryKey: ['agendamentos'] });
-
       setShowForm(false);
-
       setEditingAppointment(null);
-
     },
-
   });
 
-
-
   const handleSubmit = (data) => {
-
     if (editingAppointment) {
-
       updateMutation.mutate({ id: editingAppointment.id, data });
-
     } else {
-
       createMutation.mutate(data);
-
     }
-
   };
 
 

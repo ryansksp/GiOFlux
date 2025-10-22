@@ -1,16 +1,15 @@
 // Database Abstraction Layer
-// This provides a unified interface for switching between Firebase and MySQL later
+// This provides a unified interface for switching between Firebase and other databases later
 
 import { firebaseAuth } from '../firebase/auth';
 import { firebaseFirestore } from '../firebase/firestore';
-import { firebaseStorage } from '../firebase/storage';
 
 // Current implementation using Firebase
 class DatabaseService {
   constructor() {
     this.auth = firebaseAuth;
     this.firestore = firebaseFirestore;
-    this.storage = firebaseStorage;
+    this.storage = null; // Storage not implemented yet
   }
 
   // Authentication methods
@@ -22,16 +21,34 @@ class DatabaseService {
     return this.auth.signUp(email, password, userData);
   }
 
-  async signInWithGoogle() {
-    return this.auth.signInWithGoogle();
-  }
-
   async signOut() {
     return this.auth.signOut();
   }
 
   async getCurrentUser() {
-    return this.auth.getCurrentUser();
+    const user = this.auth.auth.currentUser;
+    if (!user) return null;
+
+    // Get additional profile data from Firestore
+    const profileResult = await this.firestore.getUser(user.uid);
+    if (profileResult.success) {
+      return {
+        ...user,
+        ...profileResult.data,
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || profileResult.data.displayName,
+        role: profileResult.data.role || 'consultora'
+      };
+    }
+
+    // Fallback to basic auth data
+    return {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      role: 'consultora'
+    };
   }
 
   async updateProfile(userData) {
@@ -115,6 +132,10 @@ class DatabaseService {
     return this.firestore.getTransactions(userId, options);
   }
 
+  async getAllTransactions(collectionName = 'transactions') {
+    return this.firestore.getAllTransactions(collectionName);
+  }
+
   async updateTransaction(transactionId, transactionData) {
     return this.firestore.updateTransaction(transactionId, transactionData);
   }
@@ -142,15 +163,18 @@ class DatabaseService {
 
   // File storage (optional - can be disabled if storage costs are an issue)
   async uploadFile(file, path) {
-    return this.storage.uploadFile(file, path);
+    // Not implemented yet
+    return { success: false, error: 'Storage not implemented' };
   }
 
   async getDownloadURL(path) {
-    return this.storage.getDownloadURL(path);
+    // Not implemented yet
+    return { success: false, error: 'Storage not implemented' };
   }
 
   async deleteFile(path) {
-    return this.storage.deleteFile(path);
+    // Not implemented yet
+    return { success: false, error: 'Storage not implemented' };
   }
 }
 

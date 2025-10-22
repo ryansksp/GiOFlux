@@ -1,52 +1,52 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ===== TEMPORARY DEBUG RULES - MORE PERMISSIVE =====
-    // Allow authenticated users to read/write their own documents
-    match /{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null;
-    }
-
-    // ===== USERS COLLECTION =====
+    // Users can read and write their own user documents
     match /users/{userId} {
-      // Allow users to read/write their own profile
       allow read, write: if request.auth != null && request.auth.uid == userId;
-
-      // Allow creating user profile during registration
       allow create: if request.auth != null && request.auth.uid == userId;
     }
 
-    // ===== CLIENTS COLLECTION =====
+    // Users can read and write their own data in subcollections
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow authenticated users to read/write their own clients
     match /clients/{clientId} {
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read, write: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.userId;
     }
 
-    // ===== APPOINTMENTS COLLECTION =====
+    // Allow authenticated users to read/write their own appointments
     match /appointments/{appointmentId} {
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read, write: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.userId;
     }
 
-    // ===== TREATMENTS COLLECTION =====
+    // Allow authenticated users to read/write their own treatments
     match /treatments/{treatmentId} {
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read, write: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.userId;
     }
 
-    // ===== TRANSACTIONS COLLECTION =====
+    // Allow authenticated users to read/write their own transactions
     match /transactions/{transactionId} {
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read, write, create: if request.auth != null;
     }
 
-    // ===== CAMPAIGNS COLLECTION =====
+    // Allow authenticated users to read/write their own campaigns
     match /campaigns/{campaignId} {
-      // Allow professionals and admins to access campaigns
-      allow read, write: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read, write: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.userId;
     }
   }
 }

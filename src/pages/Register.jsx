@@ -33,6 +33,25 @@ export default function Register() {
     }));
   };
 
+  const isWeakPassword = (password) => {
+    const weakPatterns = [
+      /^123456$/,
+      /^password$/i,
+      /^123321$/,
+      /^111111$/,
+      /^000000$/,
+      /^qwerty$/i,
+      /^abcdef$/i,
+      /^(\d)\1{5}$/, // repeated digits like 111111
+      /^(\w)\1{5}$/i, // repeated letters
+      /^123123$/,
+      /^abc123$/i,
+      /^senha$/i,
+      /^teste$/i
+    ];
+    return weakPatterns.some(pattern => pattern.test(password));
+  };
+
   const validateForm = () => {
     if (!formData.displayName.trim()) {
       setError('Nome é obrigatório');
@@ -48,6 +67,10 @@ export default function Register() {
     }
     if (formData.password.length < 6) {
       setError('A senha deve ter pelo menos 6 caracteres');
+      return false;
+    }
+    if (isWeakPassword(formData.password)) {
+      setError('A senha é muito fraca. Use uma senha mais segura, evitando sequências óbvias como 123321 ou palavras comuns.');
       return false;
     }
     if (formData.password !== formData.confirmPassword) {

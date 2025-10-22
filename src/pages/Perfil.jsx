@@ -1,53 +1,65 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, Save, User } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Camera, Save, User, CheckCircle, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Perfil() {
+  const { userProfile, updateProfile, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
-    full_name: '',
+    displayName: '',
     email: '',
     phone: '',
-    bio: '',
-    avatar_url: ''
+    bio: ''
   });
-
-  const queryClient = useQueryClient();
-
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-  });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
 
   useEffect(() => {
-    if (user) {
+    if (userProfile) {
       setFormData({
-        full_name: user.full_name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        bio: user.bio || '',
-        avatar_url: user.avatar_url || ''
+        displayName: userProfile.displayName || '',
+        email: userProfile.email || '',
+        phone: userProfile.phone || '',
+        bio: userProfile.bio || ''
       });
     }
-  }, [user]);
+  }, [userProfile]);
 
-  const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.User.update(user?.id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-    },
-  });
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    updateMutation.mutate(formData);
+    setLoading(true);
+    setMessage('');
+    setMessageType('');
+
+    try {
+      const result = await updateProfile({
+        displayName: formData.displayName,
+        phone: formData.phone,
+        bio: formData.bio
+      });
+
+      if (result.success) {
+        setMessage('Perfil atualizado com sucesso!');
+        setMessageType('success');
+      } else {
+        setMessage('Erro ao atualizar perfil. Tente novamente.');
+        setMessageType('error');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
+      setMessage('Erro ao atualizar perfil. Tente novamente.');
+      setMessageType('error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field, value) => {
@@ -57,7 +69,7 @@ export default function Perfil() {
     }));
   };
 
-  if (isLoading) {
+  if (authLoading || !userProfile) {
     return (
       <div className="p-4 md:p-8">
         <div className="animate-pulse space-y-6">
@@ -96,12 +108,21 @@ export default function Perfil() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {message && (
+              <Alert className={messageType === 'success' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
+                {messageType === 'success' ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                <AlertDescription className={messageType === 'success' ? 'text-green-800' : 'text-red-800'}>
+                  {message}
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="flex items-center gap-6">
               <div className="relative">
                 <Avatar className="w-24 h-24 border-4 border-purple-200">
-                  <AvatarImage src={formData.avatar_url} alt={formData.full_name} />
+                  <AvatarImage src={formData.avatar_url} alt={formData.displayName} />
                   <AvatarFallback className="bg-gradient-to-br from-[#823a80] to-[#c43c8b] text-white text-2xl font-semibold">
-                    {formData.full_name?.charAt(0) || 'U'}
+                    {formData.displayName?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <Button
@@ -117,7 +138,7 @@ export default function Perfil() {
                 </Button>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900">{formData.full_name || 'Nome não informado'}</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{formData.displayName || 'Nome não informado'}</h3>
                 <p className="text-gray-600">{formData.email}</p>
               </div>
             </div>
@@ -125,11 +146,11 @@ export default function Perfil() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="full_name">Nome Completo</Label>
+                  <Label htmlFor="displayName">Nome Completo</Label>
                   <Input
-                    id="full_name"
-                    value={formData.full_name}
-                    onChange={(e) => handleInputChange('full_name', e.target.value)}
+                    id="displayName"
+                    value={formData.displayName}
+                    onChange={(e) => handleInputChange('displayName', e.target.value)}
                     placeholder="Digite seu nome completo"
                   />
                 </div>
@@ -141,6 +162,7 @@ export default function Perfil() {
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     placeholder="Digite seu e-mail"
+                    disabled
                   />
                 </div>
               </div>
@@ -169,11 +191,11 @@ export default function Perfil() {
               <div className="flex justify-end">
                 <Button
                   type="submit"
-                  disabled={updateMutation.isPending}
+                  disabled={loading}
                   className="bg-gradient-to-r from-[#823a80] to-[#c43c8b] hover:opacity-90 transition-opacity"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  {updateMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
+                  {loading ? 'Salvando...' : 'Salvar Alterações'}
                 </Button>
               </div>
             </form>

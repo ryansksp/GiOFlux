@@ -98,6 +98,22 @@ export default function Layout({ children }) {
 
       });
 
+      // Adicionar Perfil para todos os usuários
+
+      const perfilItem = {
+
+        title: "Perfil",
+
+        url: createPageUrl("Perfil"),
+
+        icon: User,
+
+        requiredRole: "consultora"
+
+      };
+
+      filteredItems.push(perfilItem);
+
 
 
       setNavigationItems(filteredItems);

@@ -12,6 +12,7 @@ import Agenda from './pages/Agenda';
 import Tratamentos from './pages/Tratamentos';
 import Financeiro from './pages/Financeiro';
 import Campanhas from './pages/Campanhas';
+import Perfil from './pages/Perfil';
 
 // Components
 import Layout from './components/Layout';
@@ -59,6 +60,7 @@ function AppRoutes() {
                 <Route path="/tratamentos" element={<Tratamentos />} />
                 <Route path="/financeiro" element={<Financeiro />} />
                 <Route path="/campanhas" element={<Campanhas />} />
+                <Route path="/perfil" element={<Perfil />} />
                 <Route path="/" element={<Navigate to="/dashboard" />} />
               </Routes>
             </Layout>
@@ -74,7 +76,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <AppRoutes />
         </Router>
       </AuthProvider>

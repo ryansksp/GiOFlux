@@ -4,6 +4,7 @@ import {
   getDoc,
   getDocs,
   addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   query,
@@ -11,15 +12,13 @@ import {
   orderBy,
   limit,
   startAfter,
-  onSnapshot,
-  Timestamp,
-  writeBatch
+  Timestamp
 } from 'firebase/firestore';
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 
-// Initialize Firebase app if not already initialized
+// Inicializa Firebase
 let app;
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
@@ -28,14 +27,13 @@ if (getApps().length === 0) {
 }
 
 export const db = getFirestore(app);
-export { app };
 
 export class FirebaseFirestore {
   constructor() {
     this.db = db;
   }
 
-  // Generic CRUD operations
+  // CRUD genérico
   async create(collectionName, data) {
     try {
       const docRef = await addDoc(collection(this.db, collectionName), {
@@ -43,17 +41,9 @@ export class FirebaseFirestore {
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       });
-      return {
-        success: true,
-        id: docRef.id,
-        data: { ...data, id: docRef.id }
-      };
+      return { success: true, id: docRef.id, data: { ...data, id: docRef.id } };
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        code: error.code
-      };
+      return { success: false, error: error.message, code: error.code };
     }
   }
 
@@ -61,199 +51,99 @@ export class FirebaseFirestore {
     try {
       const docRef = doc(this.db, collectionName, id);
       const docSnap = await getDoc(docRef);
-
       if (docSnap.exists()) {
-        return {
-          success: true,
-          data: { id: docSnap.id, ...docSnap.data() }
-        };
+        return { success: true, data: { id: docSnap.id, ...docSnap.data() } };
       } else {
-        return {
-          success: false,
-          error: 'Document not found'
-        };
+        return { success: false, error: 'Document not found' };
       }
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        code: error.code
-      };
+      return { success: false, error: error.message, code: error.code };
     }
   }
 
   async update(collectionName, id, data) {
     try {
       const docRef = doc(this.db, collectionName, id);
-      await updateDoc(docRef, {
-        ...data,
-        updatedAt: Timestamp.now()
-      });
-      return {
-        success: true,
-        id,
-        data: { ...data, id }
-      };
+      await updateDoc(docRef, { ...data, updatedAt: Timestamp.now() });
+      return { success: true, id, data: { ...data, id } };
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        code: error.code
-      };
+      return { success: false, error: error.message, code: error.code };
     }
   }
 
   async delete(collectionName, id) {
     try {
       await deleteDoc(doc(this.db, collectionName, id));
-      return { success: true, id };
+      return { success: true };
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        code: error.code
-      };
+      return { success: false, error: error.message, code: error.code };
     }
   }
 
   async list(collectionName, options = {}) {
     try {
-      const {
-        where: whereClause = [],
-        orderBy: orderByClause = [],
-        limit: limitCount,
-        startAfter: startAfterDoc
-      } = options;
-
       let q = collection(this.db, collectionName);
 
-      // Apply where clauses
-      whereClause.forEach(([field, operator, value]) => {
-        q = query(q, where(field, operator, value));
-      });
-
-      // Apply order by
-      orderByClause.forEach(([field, direction = 'asc']) => {
-        q = query(q, orderBy(field, direction));
-      });
-
-      // Apply limit
-      if (limitCount) {
-        q = query(q, limit(limitCount));
+      // Filtros
+      if (options.where) {
+        options.where.forEach(([field, operator, value]) => {
+          q = query(q, where(field, operator, value));
+        });
       }
 
-      // Apply start after for pagination
-      if (startAfterDoc) {
-        q = query(q, startAfter(startAfterDoc));
+      // Ordenação
+      if (options.orderBy) {
+        if (Array.isArray(options.orderBy)) {
+          const [field, direction] = options.orderBy;
+          q = query(q, orderBy(field, direction || 'asc'));
+        } else {
+          q = query(q, orderBy(options.orderBy, 'desc'));
+        }
+      }
+
+      // Limite
+      if (options.limit) {
+        q = query(q, limit(options.limit));
+      }
+
+      // Paginação
+      if (options.startAfter) {
+        q = query(q, startAfter(options.startAfter));
       }
 
       const querySnapshot = await getDocs(q);
-      const results = [];
-
-      querySnapshot.forEach((doc) => {
-        results.push({ id: doc.id, ...doc.data() });
-      });
+      const data = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
       return {
         success: true,
-        data: results
+        data,
+        lastDoc: querySnapshot.docs[querySnapshot.docs.length - 1]
       };
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        code: error.code
-      };
+      return { success: false, error: error.message, code: error.code };
     }
   }
 
-  // Real-time listener
-  listenToCollection(collectionName, callback, options = {}) {
-    try {
-      const {
-        where: whereClause = [],
-        orderBy: orderByClause = []
-      } = options;
-
-      let q = collection(this.db, collectionName);
-
-      // Apply where clauses
-      whereClause.forEach(([field, operator, value]) => {
-        q = query(q, where(field, operator, value));
-      });
-
-      // Apply order by
-      orderByClause.forEach(([field, direction = 'asc']) => {
-        q = query(q, orderBy(field, direction));
-      });
-
-      return onSnapshot(q, (querySnapshot) => {
-        const results = [];
-        querySnapshot.forEach((doc) => {
-          results.push({ id: doc.id, ...doc.data() });
-        });
-        callback({ success: true, data: results });
-      }, (error) => {
-        callback({
-          success: false,
-          error: error.message,
-          code: error.code
-        });
-      });
-    } catch (error) {
-      callback({
-        success: false,
-        error: error.message,
-        code: error.code
-      });
-    }
-  }
-
-  // Batch operations
-  async batchWrite(operations) {
-    try {
-      const batch = writeBatch(this.db);
-
-      operations.forEach(({ type, collection: collectionName, id, data }) => {
-        const docRef = doc(this.db, collectionName, id);
-
-        switch (type) {
-          case 'create':
-            batch.set(docRef, {
-              ...data,
-              createdAt: Timestamp.now(),
-              updatedAt: Timestamp.now()
-            });
-            break;
-          case 'update':
-            batch.update(docRef, {
-              ...data,
-              updatedAt: Timestamp.now()
-            });
-            break;
-          case 'delete':
-            batch.delete(docRef);
-            break;
-          default:
-            throw new Error(`Unknown operation type: ${type}`);
-        }
-      });
-
-      await batch.commit();
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        code: error.code
-      };
-    }
-  }
-
-  // Specific collection methods for the app
-  // Users
+  // ===== Usuários =====
   async createUser(userData) {
-    return this.create('users', userData);
+    try {
+      console.log('Firestore createUser called with:', userData);
+      const docRef = doc(this.db, 'users', userData.uid);
+      console.log('Doc ref created for path:', docRef.path);
+      await setDoc(docRef, {
+        ...userData,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      });
+      console.log('setDoc completed successfully');
+      return { success: true, id: userData.uid, data: { ...userData, id: userData.uid } };
+    } catch (error) {
+      console.error('Firestore createUser error:', error);
+      return { success: false, error: error.message, code: error.code };
+    }
   }
 
   async getUser(userId) {
@@ -264,16 +154,16 @@ export class FirebaseFirestore {
     return this.update('users', userId, userData);
   }
 
-  // Clients
-  async createClient(clientData) {
-    return this.create('clients', clientData);
-  }
-
+  // ===== Clientes =====
   async getClients(userId, options = {}) {
     return this.list('clients', {
       ...options,
       where: [['userId', '==', userId]]
     });
+  }
+
+  async createClient(clientData) {
+    return this.create('clients', clientData);
   }
 
   async updateClient(clientId, clientData) {
@@ -284,16 +174,16 @@ export class FirebaseFirestore {
     return this.delete('clients', clientId);
   }
 
-  // Appointments
-  async createAppointment(appointmentData) {
-    return this.create('appointments', appointmentData);
-  }
-
+  // ===== Agendamentos =====
   async getAppointments(userId, options = {}) {
     return this.list('appointments', {
       ...options,
       where: [['userId', '==', userId]]
     });
+  }
+
+  async createAppointment(appointmentData) {
+    return this.create('appointments', appointmentData);
   }
 
   async updateAppointment(appointmentId, appointmentData) {
@@ -304,16 +194,16 @@ export class FirebaseFirestore {
     return this.delete('appointments', appointmentId);
   }
 
-  // Treatments
-  async createTreatment(treatmentData) {
-    return this.create('treatments', treatmentData);
-  }
-
+  // ===== Tratamentos =====
   async getTreatments(userId, options = {}) {
     return this.list('treatments', {
       ...options,
       where: [['userId', '==', userId]]
     });
+  }
+
+  async createTreatment(treatmentData) {
+    return this.create('treatments', treatmentData);
   }
 
   async updateTreatment(treatmentId, treatmentData) {
@@ -324,36 +214,73 @@ export class FirebaseFirestore {
     return this.delete('treatments', treatmentId);
   }
 
-  // Financial transactions
-  async createTransaction(transactionData) {
-    return this.create('transactions', transactionData);
-  }
-
+  // ===== Transações financeiras =====
   async getTransactions(userId, options = {}) {
-    return this.list('transactions', {
+    // Primeiro tenta buscar na coleção 'transactions'
+    let result = await this.list('transactions', {
       ...options,
       where: [['userId', '==', userId]]
     });
+
+    // Se não encontrou, tenta na coleção 'transacoes' (português)
+    if (!result.success || (result.data && result.data.length === 0)) {
+      result = await this.list('transacoes', {
+        ...options,
+        where: [['userId', '==', userId]]
+      });
+    }
+
+    return result;
+  }
+
+  // Método alternativo sem filtros para casos onde índices não existem
+  async getAllTransactions(collectionName = 'transactions') {
+    try {
+      const q = collection(this.db, collectionName);
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  async createTransaction(transactionData) {
+    // Convert date string to Firestore Timestamp
+    const data = {
+      ...transactionData,
+      data_transacao: Timestamp.fromDate(new Date(transactionData.data_transacao))
+    };
+    return this.create('transactions', data);
   }
 
   async updateTransaction(transactionId, transactionData) {
-    return this.update('transactions', transactionId, transactionData);
+    // Convert date string to Firestore Timestamp if present
+    const data = transactionData.data_transacao ?
+      {
+        ...transactionData,
+        data_transacao: Timestamp.fromDate(new Date(transactionData.data_transacao))
+      } : transactionData;
+    return this.update('transactions', transactionId, data);
   }
 
   async deleteTransaction(transactionId) {
     return this.delete('transactions', transactionId);
   }
 
-  // Campaigns
-  async createCampaign(campaignData) {
-    return this.create('campaigns', campaignData);
-  }
-
+  // ===== Campanhas =====
   async getCampaigns(userId, options = {}) {
     return this.list('campaigns', {
       ...options,
       where: [['userId', '==', userId]]
     });
+  }
+
+  async createCampaign(campaignData) {
+    return this.create('campaigns', campaignData);
   }
 
   async updateCampaign(campaignId, campaignData) {
@@ -365,5 +292,5 @@ export class FirebaseFirestore {
   }
 }
 
-// Export singleton instance
+// Export singleton
 export const firebaseFirestore = new FirebaseFirestore();

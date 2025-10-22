@@ -1,33 +1,17 @@
-# Authentication & Security Implementation
+# Correções no Dashboard e Financeiro
 
-## Phase 1: Core Authentication Setup
-- [x] Update AuthContext to use Firebase auth properly
-- [x] Create Register page with Firebase sign-up
-- [x] Update Login page to use Firebase auth
-- [x] Add email verification requirement
-- [x] Implement password reset functionality
+## Problemas Identificados
+- Gráfico "Receita dos Últimos 15 Dias" mostra os primeiros 15 dias do mês atual, não os últimos 15 dias
+- Receita do mês pode não estar considerando fuso horário correto (Brasília)
+- Dashboard não atualiza com transações existentes devido a datas futuras ou bugs na lógica
 
-## Phase 2: User Management & Roles
-- [x] Create user profile structure in Firestore
-- [x] Implement role-based access control (admin, gerente, consultora)
-- [x] Update UserBadge component to use Firebase user data
-- [x] Update ProtectedRoute component to use Firebase user
+## Tarefas
+- [ ] Corrigir lógica do gráfico RevenueChart.jsx para mostrar últimos 15 dias reais
+- [ ] Ajustar cálculo de receita do mês para usar fuso horário de Brasília
+- [ ] Verificar se transações estão sendo carregadas corretamente no dashboard
+- [ ] Adicionar filtro de período no dashboard para visualizar meses anteriores
+- [ ] Testar com dados existentes
 
-## Phase 3: Security Enhancements
-- [x] Add session persistence and auto-login
-- [x] Implement proper logout functionality
-- [x] Add route guards for all protected pages
-- [x] Add loading states and error handling
-- [x] Implement user profile management
-
-## Phase 4: UI/UX Improvements
-- [x] Update Layout component logout to use Firebase
-- [x] Add user avatar and profile display
-- [x] Implement responsive design for auth pages
-- [x] Add success/error notifications
-
-## Phase 5: Testing & Validation
-- [ ] Test all authentication flows
-- [ ] Test role-based permissions
-- [ ] Test security features
-- [ ] Validate user experience
+## Status
+- Análise completa dos arquivos relevantes
+- Identificados bugs no gráfico e possíveis problemas de fuso horário
