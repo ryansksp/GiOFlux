@@ -76,9 +76,18 @@ function PrivateRoute({ children }) {
     );
   }
 
-  // Verificar se usuário está autenticado e aprovado
-  if (!user || !userProfile) {
+  // Verificar se usuário está autenticado
+  if (!user) {
     return <Navigate to="/login" />;
+  }
+
+  // Aguardar carregamento do perfil
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#823a80]"></div>
+      </div>
+    );
   }
 
   // Se usuário tem role 'pending', redirecionar para página de aprovação pendente

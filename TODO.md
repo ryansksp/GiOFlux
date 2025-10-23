@@ -1,34 +1,19 @@
-# TODO - Preparação para Vercel e Segurança
+# TODO - Login Redirect Loop Fix
 
-## Segurança Crítica
-- [x] Corrigir acesso direto sem login (falha crítica)
-- [x] Remover possibilidade de registro como admin
-- [x] Implementar sistema de aprovação de usuários por admin
-- [x] Adicionar conformidade LGPD (política de privacidade, consentimento)
+## Issue Description
+When logging in, the system prompts for login again and flashes before entering. This is caused by a race condition where the user is authenticated but the profile data is still loading, causing premature redirects.
 
-## Autenticação e Autorização
-- [x] Proteger todas as rotas com verificação de login
-- [x] Adicionar verificação de status de aprovação
-- [x] Atualizar regras do Firestore para maior segurança
-- [x] Adicionar validações extras no registro
+## Changes Made
+- [x] Modified `src/App.jsx` PrivateRoute component to separate authentication check from profile loading check
+- [x] Added loading spinner while profile is being fetched after authentication
+- [x] Prevented redirect to login when user is authenticated but profile is still loading
 
-## LGPD Compliance
-- [x] Criar página de Política de Privacidade
-- [x] Adicionar consentimento no formulário de registro
-- [x] Implementar termos de uso
+## Testing
+- [ ] Test login flow to ensure no more redirect loop
+- [ ] Verify that approved users can access the dashboard
+- [ ] Verify that pending users see the approval page
+- [ ] Verify that unauthenticated users are redirected to login
 
-## Preparação para Vercel
-- [x] Configurar build para produção
-- [x] Criar vercel.json com configurações necessárias
-- [x] Verificar compatibilidade de dependências
-
-## Novos Componentes/Páginas
-- [x] src/pages/PrivacyPolicy.jsx
-- [x] src/pages/UserManagement.jsx (para admins gerenciarem aprovações)
-- [x] vercel.json
-
-## Testes e Validação
-- [x] Testar fluxo de registro e aprovação
-- [x] Verificar proteção de rotas
-- [x] Testar build para Vercel
-- [x] Validar segurança geral
+## Follow-up Steps
+- [ ] Monitor for any authentication issues after deployment
+- [ ] Consider adding retry logic for profile fetching if needed
