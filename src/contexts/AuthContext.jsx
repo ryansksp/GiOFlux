@@ -35,7 +35,21 @@ export const AuthProvider = ({ children }) => {
           }
 
           if (profileResult.success) {
-            setUserProfile(profileResult.data);
+            const profile = profileResult.data;
+
+            // Verificar se usuário está aprovado
+            if (profile.role === 'pending') {
+              console.warn('🚨 User authenticated but account is pending approval');
+              // Não faz logout, mas marca como não aprovado
+              setUserProfile({ ...profile, isApproved: false });
+            } else if (['consultora', 'gerente', 'admin'].includes(profile.role)) {
+              setUserProfile({ ...profile, isApproved: true });
+            } else {
+              console.error('🚨 SECURITY ALERT: Invalid user role!');
+              await databaseService.signOut();
+              setUser(null);
+              setUserProfile(null);
+            }
           } else {
             console.error('🚨 SECURITY ALERT: User authenticated but no Firestore profile found!');
             await databaseService.signOut();

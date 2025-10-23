@@ -161,6 +161,17 @@ class DatabaseService {
     return this.firestore.deleteCampaign(campaignId);
   }
 
+  // User management for admins
+  async getAllUsers() {
+    try {
+      const result = await this.firestore.getAllUsers();
+      return result;
+    } catch (error) {
+      console.error('Erro ao buscar todos os usuários:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   // File storage (optional - can be disabled if storage costs are an issue)
   async uploadFile(file, path) {
     // Not implemented yet

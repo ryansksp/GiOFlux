@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { databaseService } from "@/services/database";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 import TreatmentCard from "../components/tratamentos/TreatmentCard";
 import TreatmentStats from "../components/tratamentos/TreatmentStats";
@@ -68,7 +70,7 @@ export default function Tratamentos() {
 
         <h1 className="text-3xl font-bold bg-gradient-to-r from-[#823a80] to-[#c43c8b] bg-clip-text text-transparent">
 
-          Tratamentos
+          Procedimentos
 
         </h1>
 
@@ -82,22 +84,23 @@ export default function Tratamentos() {
 
 
 
-      <div className="relative">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Input
+            placeholder="Buscar por cliente ou tipo de tratamento..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 border-purple-200 focus:border-purple-400"
+          />
+        </div>
 
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-
-        <Input
-
-          placeholder="Buscar por cliente ou tipo de tratamento..."
-
-          value={searchTerm}
-
-          onChange={(e) => setSearchTerm(e.target.value)}
-
-          className="pl-10 border-purple-200 focus:border-purple-400"
-
-        />
-
+        <Button asChild className="bg-gradient-to-r from-[#823a80] to-[#c43c8b] hover:from-[#6b2f6b] hover:to-[#a33c8b] text-white">
+          <Link to="/tratamento">
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Procedimento
+          </Link>
+        </Button>
       </div>
 
 

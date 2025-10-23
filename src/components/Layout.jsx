@@ -52,7 +52,7 @@ const allNavigationItems = [
     requiredRole: "consultora"
   },
   {
-    title: "Tratamentos",
+    title: "Procedimentos",
     url: createPageUrl("Tratamentos"),
     icon: Activity,
     requiredRole: "consultora"
@@ -277,7 +277,7 @@ export default function Layout({ children }) {
 
 
 
-        <main className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col relative z-0">
 
           <header className="bg-white/80 backdrop-blur-sm border-b border-purple-100 px-6 py-4 md:hidden">
 

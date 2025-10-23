@@ -1,17 +1,34 @@
-# Correções no Dashboard e Financeiro
+# TODO - Preparação para Vercel e Segurança
 
-## Problemas Identificados
-- Gráfico "Receita dos Últimos 15 Dias" mostra os primeiros 15 dias do mês atual, não os últimos 15 dias
-- Receita do mês pode não estar considerando fuso horário correto (Brasília)
-- Dashboard não atualiza com transações existentes devido a datas futuras ou bugs na lógica
+## Segurança Crítica
+- [x] Corrigir acesso direto sem login (falha crítica)
+- [x] Remover possibilidade de registro como admin
+- [x] Implementar sistema de aprovação de usuários por admin
+- [x] Adicionar conformidade LGPD (política de privacidade, consentimento)
 
-## Tarefas
-- [ ] Corrigir lógica do gráfico RevenueChart.jsx para mostrar últimos 15 dias reais
-- [ ] Ajustar cálculo de receita do mês para usar fuso horário de Brasília
-- [ ] Verificar se transações estão sendo carregadas corretamente no dashboard
-- [ ] Adicionar filtro de período no dashboard para visualizar meses anteriores
-- [ ] Testar com dados existentes
+## Autenticação e Autorização
+- [x] Proteger todas as rotas com verificação de login
+- [x] Adicionar verificação de status de aprovação
+- [x] Atualizar regras do Firestore para maior segurança
+- [x] Adicionar validações extras no registro
 
-## Status
-- Análise completa dos arquivos relevantes
-- Identificados bugs no gráfico e possíveis problemas de fuso horário
+## LGPD Compliance
+- [x] Criar página de Política de Privacidade
+- [x] Adicionar consentimento no formulário de registro
+- [x] Implementar termos de uso
+
+## Preparação para Vercel
+- [x] Configurar build para produção
+- [x] Criar vercel.json com configurações necessárias
+- [x] Verificar compatibilidade de dependências
+
+## Novos Componentes/Páginas
+- [x] src/pages/PrivacyPolicy.jsx
+- [x] src/pages/UserManagement.jsx (para admins gerenciarem aprovações)
+- [x] vercel.json
+
+## Testes e Validação
+- [x] Testar fluxo de registro e aprovação
+- [x] Verificar proteção de rotas
+- [x] Testar build para Vercel
+- [x] Validar segurança geral

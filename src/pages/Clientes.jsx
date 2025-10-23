@@ -3,7 +3,8 @@ import { databaseService } from "@/services/database";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Filter } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Search, Filter, ArrowUpDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -19,15 +20,59 @@ export default function Clientes() {
   const [selectedClient, setSelectedClient] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("todos");
+  const [sortBy, setSortBy] = useState("data-desc");
 
   const { userProfile } = useAuth();
   const queryClient = useQueryClient();
 
+  const getOrderBy = (sortOption) => {
+    switch (sortOption) {
+      case "nome-asc":
+        return ['nome_completo', 'asc'];
+      case "nome-desc":
+        return ['nome_completo', 'desc'];
+      case "data-asc":
+        return ['createdAt', 'asc'];
+      case "data-desc":
+      default:
+        return ['createdAt', 'desc'];
+    }
+  };
+
   const { data: clientes = [], isLoading } = useQuery({
-    queryKey: ['clientes'],
+    queryKey: ['clientes', sortBy],
     queryFn: async () => {
-      const result = await databaseService.getClients(userProfile?.uid, { orderBy: ['createdAt', 'desc'] });
-      return result.success ? result.data : [];
+      // Sempre buscar sem ordenação do Firestore primeiro
+      const result = await databaseService.getClients(userProfile?.uid, {});
+      if (result.success) {
+        // Sempre aplicar ordenação local
+        let sortedData = [...result.data];
+        switch (sortBy) {
+          case "nome-asc":
+            sortedData.sort((a, b) => (a.nome_completo || '').localeCompare(b.nome_completo || ''));
+            break;
+          case "nome-desc":
+            sortedData.sort((a, b) => (b.nome_completo || '').localeCompare(a.nome_completo || ''));
+            break;
+          case "data-asc":
+            sortedData.sort((a, b) => {
+              const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt);
+              const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt);
+              return dateA - dateB;
+            });
+            break;
+          case "data-desc":
+          default:
+            sortedData.sort((a, b) => {
+              const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt);
+              const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt);
+              return dateB - dateA;
+            });
+            break;
+        }
+        return sortedData;
+      }
+      return [];
     },
     initialData: [],
     enabled: !!userProfile,
@@ -121,49 +166,39 @@ export default function Clientes() {
 
 
       <div className="flex flex-col md:flex-row gap-4">
-
         <div className="relative flex-1">
-
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-
           <Input
-
             placeholder="Buscar por nome, email ou telefone..."
-
             value={searchTerm}
-
             onChange={(e) => setSearchTerm(e.target.value)}
-
             className="pl-10 border-purple-200 focus:border-purple-400"
-
           />
-
         </div>
-
-        <div className="flex gap-2">
-
+        <div className="flex gap-2 items-center">
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-48 border-purple-200 focus:border-purple-400">
+              <ArrowUpDown className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Ordenar por..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="nome-asc">Nome A-Z</SelectItem>
+              <SelectItem value="nome-desc">Nome Z-A</SelectItem>
+              <SelectItem value="data-desc">Data mais recente</SelectItem>
+              <SelectItem value="data-asc">Data mais antiga</SelectItem>
+            </SelectContent>
+          </Select>
           {['todos', 'ativo', 'lead', 'inativo'].map((status) => (
-
             <Button
-
               key={status}
-
               variant={filterStatus === status ? "default" : "outline"}
-
               onClick={() => setFilterStatus(status)}
-
               className={filterStatus === status ? "bg-gradient-to-r from-[#823a80] to-[#c43c8b]" : ""}
-
             >
-
               {status.charAt(0).toUpperCase() + status.slice(1)}
-
             </Button>
-
           ))}
-
         </div>
-
       </div>
 
 

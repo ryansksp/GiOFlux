@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Sparkles, Mail, Lock, Eye, EyeOff, User, ArrowLeft } from 'lucide-react';
 
 export default function Register() {
@@ -14,9 +14,9 @@ export default function Register() {
     displayName: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    role: 'consultora'
+    confirmPassword: ''
   });
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -77,6 +77,10 @@ export default function Register() {
       setError('As senhas não coincidem');
       return false;
     }
+    if (!acceptTerms) {
+      setError('Você deve aceitar os termos de uso e política de privacidade');
+      return false;
+    }
     return true;
   };
 
@@ -92,7 +96,7 @@ export default function Register() {
     try {
       await signUp(formData.email, formData.password, {
         displayName: formData.displayName,
-        role: formData.role
+        role: 'pending' // Usuários começam como pendentes de aprovação
       });
 
       setSuccess(true);
@@ -208,18 +212,27 @@ export default function Register() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="role">Função</Label>
-                <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione sua função" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="consultora">Consultora</SelectItem>
-                    <SelectItem value="gerente">Gerente</SelectItem>
-                    <SelectItem value="admin">Administrador</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* LGPD Compliance - Terms and Privacy Policy */}
+              <div className="space-y-3">
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="acceptTerms"
+                    checked={acceptTerms}
+                    onCheckedChange={setAcceptTerms}
+                    className="mt-1"
+                  />
+                  <div className="text-sm">
+                    <Label htmlFor="acceptTerms" className="text-gray-700 cursor-pointer">
+                      Aceito os{' '}
+                      <Link to="/privacy-policy" className="text-[#823a80] hover:underline font-medium">
+                        Termos de Uso e Política de Privacidade
+                      </Link>
+                    </Label>
+                    <p className="text-gray-500 text-xs mt-1">
+                      Seus dados serão tratados conforme a Lei Geral de Proteção de Dados (LGPD)
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">

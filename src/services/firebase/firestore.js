@@ -290,6 +290,20 @@ export class FirebaseFirestore {
   async deleteCampaign(campaignId) {
     return this.delete('campaigns', campaignId);
   }
+
+  // ===== Gerenciamento de Usuários (Admin) =====
+  async getAllUsers() {
+    try {
+      const querySnapshot = await getDocs(collection(this.db, 'users'));
+      const data = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message, code: error.code };
+    }
+  }
 }
 
 // Export singleton
