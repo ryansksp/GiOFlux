@@ -198,21 +198,58 @@ export class SupabaseDatabase {
     });
   }
 
+  async checkAppointmentConflict(userId, dataHora, duracaoMinutos, excludeAppointmentId = null) {
+    try {
+      const startTime = new Date(dataHora);
+      const endTime = new Date(startTime.getTime() + duracaoMinutos * 60000);
+
+      let query = this.supabase
+        .from('appointments')
+        .select('id, data_hora, duracao_minutos')
+        .eq('user_id', userId)
+        .neq('status', 'cancelado');
+
+      if (excludeAppointmentId) {
+        query = query.neq('id', excludeAppointmentId);
+      }
+
+      const { data: appointments, error } = await query;
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      // Check for conflicts
+      const hasConflict = appointments.some(appointment => {
+        const appointmentStart = new Date(appointment.data_hora);
+        const appointmentEnd = new Date(appointmentStart.getTime() + appointment.duracao_minutos * 60000);
+
+        // Check if time ranges overlap
+        return (startTime < appointmentEnd && endTime > appointmentStart);
+      });
+
+      return { success: true, hasConflict, conflictingAppointments: hasConflict ? appointments : [] };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
   async createAppointment(appointmentData) {
     // Map form data to database schema
     const mappedData = {
       user_id: appointmentData.userId || appointmentData.user_id,
       client_id: appointmentData.cliente_id || appointmentData.client_id,
       data_hora: appointmentData.data_hora,
-      servico: appointmentData.tipo_tratamento || appointmentData.servico,
+      servico: appointmentData.servico,
       duracao_minutos: appointmentData.duracao_minutos,
+      valor: appointmentData.valor,
       status: appointmentData.status,
       observacoes: appointmentData.observacoes,
     };
 
     // Remove undefined values
     Object.keys(mappedData).forEach(key => {
-      if (mappedData[key] === undefined) {
+      if (mappedData[key] === undefined || mappedData[key] === "") {
         delete mappedData[key];
       }
     });
@@ -221,7 +258,7 @@ export class SupabaseDatabase {
       const { data: result, error } = await this.supabase
         .from('appointments')
         .insert([mappedData])
-        .select('id, user_id, client_id, data_hora, servico, duracao_minutos, status, observacoes, created_at, updated_at')
+        .select('id, user_id, client_id, data_hora, servico, duracao_minutos, valor, status, observacoes, created_at, updated_at')
         .single();
 
       if (error) {
@@ -235,7 +272,25 @@ export class SupabaseDatabase {
   }
 
   async updateAppointment(appointmentId, appointmentData) {
-    return this.update('appointments', appointmentId, appointmentData);
+    // Map form data to database schema for updates
+    const mappedData = {
+      client_id: appointmentData.cliente_id || appointmentData.client_id,
+      data_hora: appointmentData.data_hora,
+      servico: appointmentData.servico,
+      duracao_minutos: appointmentData.duracao_minutos,
+      valor: appointmentData.valor,
+      status: appointmentData.status,
+      observacoes: appointmentData.observacoes,
+    };
+
+    // Remove undefined values
+    Object.keys(mappedData).forEach(key => {
+      if (mappedData[key] === undefined || mappedData[key] === "") {
+        delete mappedData[key];
+      }
+    });
+
+    return this.update('appointments', appointmentId, mappedData);
   }
 
   async deleteAppointment(appointmentId) {

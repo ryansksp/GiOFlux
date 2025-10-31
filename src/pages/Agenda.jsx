@@ -56,20 +56,67 @@ export default function Agenda() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => databaseService.createAppointment({ ...data, userId: user?.uid }),
+    mutationFn: async (data) => {
+      // Check for conflicts before creating
+      const conflictCheck = await databaseService.checkAppointmentConflict(
+        user?.uid,
+        data.data_hora,
+        data.duracao_minutos
+      );
+
+      if (conflictCheck.success && conflictCheck.hasConflict) {
+        throw new Error('Conflito de horário detectado. Há outro agendamento no mesmo período.');
+      }
+
+      return databaseService.createAppointment({ ...data, userId: user?.uid });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agendamentos'] });
       setShowForm(false);
       setEditingAppointment(null);
     },
+    onError: (error) => {
+      console.error('Erro ao criar agendamento:', error);
+      // Error handling is done in the component
+    },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => databaseService.updateAppointment(id, data),
+    mutationFn: async ({ id, data }) => {
+      // Check for conflicts before updating (exclude current appointment)
+      const conflictCheck = await databaseService.checkAppointmentConflict(
+        user?.uid,
+        data.data_hora,
+        data.duracao_minutos,
+        id // Exclude current appointment from conflict check
+      );
+
+      if (conflictCheck.success && conflictCheck.hasConflict) {
+        throw new Error('Conflito de horário detectado. Há outro agendamento no mesmo período.');
+      }
+
+      return databaseService.updateAppointment(id, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agendamentos'] });
       setShowForm(false);
       setEditingAppointment(null);
+    },
+    onError: (error) => {
+      console.error('Erro ao atualizar agendamento:', error);
+      // Error handling is done in the component
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (appointmentId) => databaseService.deleteAppointment(appointmentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agendamentos'] });
+      setShowForm(false);
+      setEditingAppointment(null);
+    },
+    onError: (error) => {
+      console.error('Erro ao excluir agendamento:', error);
     },
   });
 
@@ -191,7 +238,17 @@ export default function Agenda() {
 
             }}
 
-            isLoading={createMutation.isPending || updateMutation.isPending}
+            onDelete={(appointmentId) => {
+
+              if (window.confirm('Tem certeza que deseja excluir este agendamento?')) {
+
+                deleteMutation.mutate(appointmentId);
+
+              }
+
+            }}
+
+            isLoading={createMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
 
           />
 
