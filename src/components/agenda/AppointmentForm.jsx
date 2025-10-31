@@ -28,24 +28,34 @@ export default function AppointmentForm({ appointment, clientes, onSubmit, onCan
 
   const { user } = useAuth();
 
-  const [formData, setFormData] = useState(appointment || {
+  const [formData, setFormData] = useState(() => {
+    if (appointment) {
+      // Format date for datetime-local input (remove timezone and seconds)
+      const formattedAppointment = { ...appointment };
+      if (appointment.data_hora) {
+        // Convert to local datetime format for input (yyyy-MM-ddThh:mm)
+        const date = new Date(appointment.data_hora);
+        // Format as local date string without timezone
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        formattedAppointment.data_hora = `${year}-${month}-${day}T${hours}:${minutes}`;
+      }
+      return formattedAppointment;
+    }
 
-    cliente_id: "",
-
-    cliente_nome: "",
-
-    data_hora: "",
-
-    servico: "",
-
-    duracao_minutos: 60,
-
-    valor: "",
-
-    status: "agendado",
-
-    observacoes: ""
-
+    return {
+      cliente_id: "",
+      cliente_nome: "",
+      data_hora: "",
+      servico: "",
+      duracao_minutos: 60,
+      valor: "",
+      status: "agendado",
+      observacoes: ""
+    };
   });
 
   const [conflictAlert, setConflictAlert] = useState(null);
