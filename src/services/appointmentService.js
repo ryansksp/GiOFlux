@@ -21,6 +21,10 @@ class AppointmentService {
   async deleteAppointment(appointmentId) {
     return this.database.deleteAppointment(appointmentId);
   }
+
+  async checkAppointmentConflict(userId, dataHora, duracaoMinutos, excludeAppointmentId = null) {
+    return this.database.checkAppointmentConflict(userId, dataHora, duracaoMinutos, excludeAppointmentId);
+  }
 }
 
 export const appointmentService = new AppointmentService();

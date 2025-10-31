@@ -121,6 +121,10 @@ class DatabaseService {
     return this.appointments.deleteAppointment(appointmentId);
   }
 
+  async checkAppointmentConflict(userId, dataHora, duracaoMinutos, excludeAppointmentId = null) {
+    return this.appointments.checkAppointmentConflict(userId, dataHora, duracaoMinutos, excludeAppointmentId);
+  }
+
   // Treatment management
   async createTreatment(treatmentData) {
     return this.treatments.createTreatment(treatmentData);
