@@ -199,7 +199,39 @@ export class SupabaseDatabase {
   }
 
   async createAppointment(appointmentData) {
-    return this.create('appointments', appointmentData);
+    // Map form data to database schema
+    const mappedData = {
+      user_id: appointmentData.userId || appointmentData.user_id,
+      client_id: appointmentData.cliente_id || appointmentData.client_id,
+      data_hora: appointmentData.data_hora,
+      servico: appointmentData.tipo_tratamento || appointmentData.servico,
+      duracao_minutos: appointmentData.duracao_minutos,
+      status: appointmentData.status,
+      observacoes: appointmentData.observacoes,
+    };
+
+    // Remove undefined values
+    Object.keys(mappedData).forEach(key => {
+      if (mappedData[key] === undefined) {
+        delete mappedData[key];
+      }
+    });
+
+    try {
+      const { data: result, error } = await this.supabase
+        .from('appointments')
+        .insert([mappedData])
+        .select('id, user_id, client_id, data_hora, servico, duracao_minutos, status, observacoes, created_at, updated_at')
+        .single();
+
+      if (error) {
+        return { success: false, error: error.message, code: error.code };
+      }
+
+      return { success: true, data: result };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 
   async updateAppointment(appointmentId, appointmentData) {
