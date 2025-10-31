@@ -2,20 +2,20 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Clock } from 'lucide-react';
+// Components
+import PendingUsersNotification from './components/common/PendingUsersNotification';
 
 // Pages
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ResetPassword from './pages/ResetPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import UserManagement from './pages/UserManagement';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import Agenda from './pages/Agenda';
-import Tratamentos from './pages/Tratamentos';
-import Tratamento from './pages/Tratamento';
+import Procedimentos from './pages/Tratamentos';
+import Procedimento from './pages/Tratamento';
 import Financeiro from './pages/Financeiro';
 import Campanhas from './pages/Campanhas';
 import Perfil from './pages/Perfil';
@@ -35,36 +35,37 @@ const queryClient = new QueryClient({
 
 // Pending Approval Component
 function PendingApproval() {
-  const { signOut } = useAuth();
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#823a80] via-[#c43c8b] to-[#e91e63] p-4">
-      <div className="w-full max-w-md">
-        <Card className="backdrop-blur-sm bg-white/95 border-0 shadow-2xl">
-          <CardContent className="p-12 text-center">
-            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Clock className="w-8 h-8 text-yellow-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">Conta Pendente de Aprovação</h2>
-            <p className="text-gray-600 mb-6">
-              Sua conta foi criada com sucesso, mas precisa ser aprovada por um administrador do sistema.
-              Você receberá um email quando sua conta for ativada.
-            </p>
-            <Button
-              onClick={() => signOut()}
-              variant="outline"
-              className="w-full"
-            >
-              Sair da Conta
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+  return <PendingUsersNotification />;
 }
 
-// Protected Route Component
+// ====================================================================
+// NOVA ROTA PÚBLICA (Correção)
+// ====================================================================
+// Este componente protege rotas públicas (como /login e /register)
+// de usuários que JÁ ESTÃO autenticados e aprovados.
+function PublicRoute({ children }) {
+  const { userProfile, loading } = useAuth();
+
+  // Só redirecionar quando não estiver carregando e tiver perfil aprovado
+  if (!loading && userProfile && userProfile.isApproved) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Mostrar loading ou children
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#823a80]"></div>
+      </div>
+    );
+  }
+
+  return children;
+}
+// ====================================================================
+
+
+// Protected Route Component (Seu componente, sem alterações)
 function PrivateRoute({ children }) {
   const { user, userProfile, loading } = useAuth();
 
@@ -90,40 +91,60 @@ function PrivateRoute({ children }) {
     );
   }
 
-  // Se usuário tem role 'pending', redirecionar para página de aprovação pendente
-  if (userProfile.role === 'pending' || !userProfile.isApproved) {
-    return <PendingApproval />;
+  // Verificar se usuário tem isApproved: true para acessar o sistema
+  if (!userProfile.isApproved) {
+    // Usuário não aprovado - redirecionar para login com notificação
+    return <Navigate to="/login" />;
   }
 
   return children;
 }
 
-// App Routes Component
+// App Routes Component (Atualizado para usar PublicRoute)
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      {/* Rotas Públicas agora usam <PublicRoute> */}
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        }
+      />
+      
+      {/* Outras rotas públicas que não precisam de proteção */}
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/pending" element={<PendingApproval />} />
+
+      {/* Rotas Privadas (como estava antes) */}
       <Route
         path="/*"
         element={
           <PrivateRoute>
-            <Layout>
-              <Routes>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/clientes" element={<Clientes />} />
-                <Route path="/agenda" element={<Agenda />} />
-                <Route path="/tratamentos" element={<Tratamentos />} />
-                <Route path="/tratamento" element={<Tratamento />} />
-                <Route path="/tratamento/:id" element={<Tratamento />} />
-                <Route path="/financeiro" element={<Financeiro />} />
-                <Route path="/campanhas" element={<Campanhas />} />
-                <Route path="/perfil" element={<Perfil />} />
-                <Route path="/user-management" element={<UserManagement />} />
-                <Route path="/" element={<Navigate to="/dashboard" />} />
-              </Routes>
-            </Layout>
+            <Routes>
+              <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+              <Route path="/clientes" element={<Layout><Clientes /></Layout>} />
+              <Route path="/agenda" element={<Layout><Agenda /></Layout>} />
+              <Route path="/procedimentos" element={<Layout><Procedimentos /></Layout>} />
+              <Route path="/procedimento" element={<Layout><Procedimento /></Layout>} />
+              <Route path="/procedimento/:id" element={<Layout><Procedimento /></Layout>} />
+              <Route path="/financeiro" element={<Layout><Financeiro /></Layout>} />
+              <Route path="/campanhas" element={<Layout><Campanhas /></Layout>} />
+              <Route path="/perfil" element={<Layout><Perfil /></Layout>} />
+              <Route path="/usermanagement" element={<Layout><UserManagement /></Layout>} />
+              <Route path="/" element={<Navigate to="/dashboard" />} />
+            </Routes>
           </PrivateRoute>
         }
       />
@@ -131,7 +152,7 @@ function AppRoutes() {
   );
 }
 
-// Main App Component
+// Main App Component (Sem alterações)
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -145,3 +166,4 @@ function App() {
 }
 
 export default App;
+

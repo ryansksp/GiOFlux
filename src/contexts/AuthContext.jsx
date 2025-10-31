@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { databaseService } from '../services/database';
 
 const AuthContext = createContext({});
@@ -19,17 +19,25 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = databaseService.auth.onAuthStateChange(async (authUser) => {
       if (authUser && authUser.success) {
-        setUser(authUser.data);
+        // Map Supabase user data to match Firebase structure
+        const mappedUser = {
+          uid: authUser.user.id,
+          email: authUser.user.email,
+          displayName: authUser.user.user_metadata?.display_name || '',
+          emailVerified: authUser.user.email_confirmed_at ? true : false
+        };
+
+        setUser(mappedUser);
 
         try {
           // Aguarda o perfil existir antes de continuar
-          let profileResult = await databaseService.getUser(authUser.data.uid);
+          let profileResult = await databaseService.getUser(authUser.user.id);
           if (!profileResult.success) {
             console.warn('Perfil não encontrado, aguardando criação...');
             let retries = 0;
             while (!profileResult.success && retries < 5) {
               await new Promise(res => setTimeout(res, 500)); // espera 500ms
-              profileResult = await databaseService.getUser(authUser.data.uid);
+              profileResult = await databaseService.getUser(authUser.user.id);
               retries++;
             }
           }
@@ -37,13 +45,19 @@ export const AuthProvider = ({ children }) => {
           if (profileResult.success) {
             const profile = profileResult.data;
 
-            // Verificar se usuário está aprovado
-            if (profile.role === 'pending') {
+            // Verificar se usuário está aprovado - verificar tanto role quanto status
+            if (profile.role === 'pending' && profile.status === 'pending') {
               console.warn('🚨 User authenticated but account is pending approval');
               // Não faz logout, mas marca como não aprovado
               setUserProfile({ ...profile, isApproved: false });
-            } else if (['consultora', 'gerente', 'admin'].includes(profile.role)) {
+            } else if (['consultora', 'gerente', 'admin'].includes(profile.role) && profile.status === 'approved') {
+              console.warn('✅ User approved and authenticated');
               setUserProfile({ ...profile, isApproved: true });
+            } else if (profile.role === 'rejected' || profile.status === 'rejected') {
+              console.warn('🚨 User account was rejected');
+              await databaseService.signOut();
+              setUser(null);
+              setUserProfile(null);
             } else {
               console.error('🚨 SECURITY ALERT: Invalid user role!');
               await databaseService.signOut();
@@ -51,7 +65,7 @@ export const AuthProvider = ({ children }) => {
               setUserProfile(null);
             }
           } else {
-            console.error('🚨 SECURITY ALERT: User authenticated but no Firestore profile found!');
+            console.error('🚨 SECURITY ALERT: User authenticated but no Supabase profile found!');
             await databaseService.signOut();
             setUser(null);
             setUserProfile(null);
@@ -70,10 +84,12 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
-  const signIn = async (email, password) => {
+  const signIn = useCallback(async (email, password) => {
     const result = await databaseService.signIn(email, password);
     if (!result.success) {
       const error = new Error(result.error);
@@ -81,9 +97,9 @@ export const AuthProvider = ({ children }) => {
       throw error;
     }
     return result;
-  };
+  }, []);
 
-  const signUp = async (email, password, userData = {}) => {
+  const signUp = useCallback(async (email, password, userData = {}) => {
     try {
       const result = await databaseService.signUp(email, password, userData);
       if (!result.success) {
@@ -96,9 +112,9 @@ export const AuthProvider = ({ children }) => {
       console.error('Erro no signup:', error);
       throw error;
     }
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       await databaseService.signOut();
       setUser(null);
@@ -107,9 +123,9 @@ export const AuthProvider = ({ children }) => {
       console.error('Erro ao sair:', error);
       throw error;
     }
-  };
+  }, []);
 
-  const resetPassword = async (email) => {
+  const resetPassword = useCallback(async (email) => {
     try {
       const result = await databaseService.resetPassword(email);
       return result;
@@ -117,9 +133,9 @@ export const AuthProvider = ({ children }) => {
       console.error('Erro ao resetar senha:', error);
       throw error;
     }
-  };
+  }, []);
 
-  const updateProfile = async (updates) => {
+  const updateProfile = useCallback(async (updates) => {
     try {
       if (!user || !userProfile) throw new Error('Usuário não autenticado');
       const result = await databaseService.updateUser(user.uid, updates);
@@ -129,9 +145,9 @@ export const AuthProvider = ({ children }) => {
       console.error('Erro ao atualizar perfil:', error);
       throw error;
     }
-  };
+  }, [user, userProfile]);
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     try {
       if (!user) throw new Error('Usuário não autenticado');
       const profileResult = await databaseService.getUser(user.uid);
@@ -145,9 +161,9 @@ export const AuthProvider = ({ children }) => {
       console.error('Erro ao atualizar perfil:', error);
       throw error;
     }
-  };
+  }, [user]);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     userProfile,
     loading,
@@ -157,7 +173,7 @@ export const AuthProvider = ({ children }) => {
     resetPassword,
     updateProfile,
     refreshProfile
-  };
+  }), [user, userProfile, loading, signIn, signUp, signOut, resetPassword, updateProfile, refreshProfile]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

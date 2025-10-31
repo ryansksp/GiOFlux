@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Save, Calendar, DollarSign, User, FileText } from "lucide-react";
-import { motion } from "framer-motion";
 import { databaseService } from "@/services/database";
 import { useAuth } from "../contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +15,7 @@ import { toast } from "sonner";
 export default function Tratamento() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { userProfile } = useAuth();
+  const { user, userProfile } = useAuth();
 
   const [formData, setFormData] = useState({
     cliente_id: "",
@@ -39,7 +38,7 @@ export default function Tratamento() {
   const { data: clientes = [] } = useQuery({
     queryKey: ['clientes'],
     queryFn: async () => {
-      const result = await databaseService.getClients(userProfile?.uid);
+      const result = await databaseService.getClients(user?.uid);
       return result.success ? result.data : [];
     },
     initialData: [],
@@ -51,7 +50,7 @@ export default function Tratamento() {
     queryKey: ['tratamento', id],
     queryFn: async () => {
       if (!id) return null;
-      const result = await databaseService.getTreatments(userProfile?.uid, { id });
+      const result = await databaseService.getTreatments(user?.uid, { id });
       return result.success && result.data.length > 0 ? result.data[0] : null;
     },
     initialData: null,
@@ -60,11 +59,29 @@ export default function Tratamento() {
 
   useEffect(() => {
     if (tratamento) {
+      // Função para formatar data para datetime-local input
+      const formatDateForInput = (dateString) => {
+        if (!dateString) return "";
+        try {
+          const date = new Date(dateString);
+          // Formatar para yyyy-MM-ddThh:mm (formato esperado pelo datetime-local)
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          return `${year}-${month}-${day}T${hours}:${minutes}`;
+        } catch (error) {
+          console.warn("Erro ao formatar data:", error);
+          return "";
+        }
+      };
+
       setFormData({
         cliente_id: tratamento.cliente_id || "",
         tipo_tratamento: tratamento.tipo_tratamento || "",
         area_tratada: tratamento.area_tratada || "",
-        data_tratamento: tratamento.data_tratamento || "",
+        data_tratamento: formatDateForInput(tratamento.data_tratamento),
         profissional: tratamento.profissional || "",
         valor: tratamento.valor || "",
         status_pagamento: tratamento.status_pagamento || "pendente",
@@ -84,10 +101,11 @@ export default function Tratamento() {
     try {
       const treatmentData = {
         ...formData,
-        userId: userProfile?.uid,
+        userId: user?.uid,
         valor: parseFloat(formData.valor) || 0,
         sessao_numero: parseInt(formData.sessao_numero) || 1,
         total_sessoes: parseInt(formData.total_sessoes) || 1,
+        data_tratamento: formData.data_tratamento ? new Date(formData.data_tratamento).toISOString() : new Date().toISOString(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -100,30 +118,58 @@ export default function Tratamento() {
       }
 
       if (result.success) {
-        toast.success(id ? "Tratamento atualizado com sucesso!" : "Tratamento criado com sucesso!");
-        navigate("/tratamentos");
+        console.log("Tratamento salvo com sucesso:", result.data);
+        console.log("Status de pagamento:", formData.status_pagamento);
+        console.log("Tratamento anterior:", tratamento);
+
+        // Se o status foi alterado para "pago" e não havia transação, criar uma
+        if (formData.status_pagamento === "pago" && (!tratamento || tratamento.status_pagamento !== "pago")) {
+          const clientName = clientes.find(c => c.id === formData.cliente_id)?.nome_completo || "Cliente não encontrado";
+
+          const transactionData = {
+            tipo: "receita",
+            descricao: `Pagamento - ${formData.tipo_tratamento} - ${clientName}`,
+            valor: parseFloat(formData.valor) || 0,
+            metodo_pagamento: "dinheiro", // padrão
+            data_transacao: formData.data_tratamento ? new Date(formData.data_tratamento).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            status: "confirmado",
+            categoria: "tratamento",
+            cliente_id: formData.cliente_id,
+            userId: user?.uid,
+            tratamento_id: id || result.data?.id // ID do tratamento criado
+          };
+
+          try {
+            const transactionResult = await databaseService.createTransaction(transactionData);
+            if (!transactionResult.success) {
+              console.error("Erro ao criar transação:", transactionResult.error);
+            }
+          } catch (transactionError) {
+            console.error("Erro inesperado ao criar transação:", transactionError);
+          }
+        }
+
+        toast.success(id ? "Procedimento atualizado com sucesso!" : "Procedimento criado com sucesso!");
+        navigate("/procedimentos");
       } else {
-        toast.error("Erro ao salvar tratamento: " + result.error);
+        console.error("Erro ao salvar procedimento:", result.error);
+        toast.error("Erro ao salvar procedimento: " + result.error);
       }
     } catch (error) {
-      console.error("Erro ao salvar tratamento:", error);
-      toast.error("Erro ao salvar tratamento");
+      console.error("Erro ao salvar procedimento:", error);
+      toast.error("Erro ao salvar procedimento");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
-    navigate("/tratamentos");
+    navigate("/procedimentos");
   };
 
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-6"
-      >
+      <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-[#823a80] to-[#c43c8b] bg-clip-text text-transparent">
             {id ? "Editar Procedimento" : "Novo Procedimento"}
@@ -351,7 +397,7 @@ export default function Tratamento() {
             </CardFooter>
           </form>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -20,7 +20,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 import AppointmentForm from "../components/agenda/AppointmentForm";
 
-import AppointmentCard from "../components/agenda/AppointmentCard";
+
 
 import WeekView from "../components/agenda/WeekView";
 
@@ -32,13 +32,13 @@ export default function Agenda() {
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [viewMode, setViewMode] = useState("week");
 
-  const { userProfile } = useAuth();
+  const { user, userProfile } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: agendamentos = [], isLoading } = useQuery({
     queryKey: ['agendamentos'],
     queryFn: async () => {
-      const result = await databaseService.getAppointments(userProfile?.uid, { orderBy: 'data_hora', orderDirection: 'desc' });
+      const result = await databaseService.getAppointments(user?.uid, {});
       return result.success ? result.data : [];
     },
     initialData: [],
@@ -48,7 +48,7 @@ export default function Agenda() {
   const { data: clientes = [] } = useQuery({
     queryKey: ['clientes'],
     queryFn: async () => {
-      const result = await databaseService.getClients(userProfile?.uid);
+      const result = await databaseService.getClients(user?.uid);
       return result.success ? result.data : [];
     },
     initialData: [],
@@ -56,7 +56,7 @@ export default function Agenda() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => databaseService.createAppointment({ ...data, userId: userProfile?.uid }),
+    mutationFn: (data) => databaseService.createAppointment({ ...data, userId: user?.uid }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agendamentos'] });
       setShowForm(false);

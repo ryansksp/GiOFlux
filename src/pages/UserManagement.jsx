@@ -14,7 +14,7 @@ import { Users, UserCheck, UserX, Shield, AlertTriangle, Search, Filter } from '
 import { formatDate } from '../utils/formatters';
 
 export default function UserManagement() {
-  const { userProfile } = useAuth();
+  const { user, userProfile } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -30,38 +30,18 @@ export default function UserManagement() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      // Note: This would need a new method in databaseService to get all users
-      // For now, we'll simulate with existing data
-      const result = await databaseService.getAllUsers?.() || { success: false };
+      const result = await databaseService.getAllUsers();
 
       if (result.success) {
         setUsers(result.data || []);
       } else {
-        // Fallback: simulate some users for demo
-        setUsers([
-          {
-            uid: 'user1',
-            email: 'consultora@email.com',
-            displayName: 'Maria Silva',
-            role: 'pending',
-            createdAt: new Date('2024-01-15'),
-            emailVerified: true
-          },
-          {
-            uid: 'user2',
-            email: 'gerente@email.com',
-            displayName: 'João Santos',
-            role: 'consultora',
-            createdAt: new Date('2024-01-10'),
-            approvedAt: new Date('2024-01-10'),
-            approvedBy: 'admin',
-            emailVerified: true
-          }
-        ]);
+        setError('Erro ao carregar lista de usuários: ' + result.error);
+        setUsers([]);
       }
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
       setError('Erro ao carregar lista de usuários');
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -72,11 +52,16 @@ export default function UserManagement() {
       setError('');
       setSuccess('');
 
+      console.log('Aprovando usuário:', userId, 'com role:', newRole);
+
       const result = await databaseService.updateUser(userId, {
         role: newRole,
+        status: 'approved',
         approvedAt: new Date(),
-        approvedBy: userProfile.uid
+        approvedBy: user?.uid
       });
+
+      console.log('Resultado da aprovação:', result);
 
       if (result.success) {
         setSuccess(`Usuário aprovado com sucesso como ${newRole}`);
@@ -97,8 +82,9 @@ export default function UserManagement() {
 
       const result = await databaseService.updateUser(userId, {
         role: 'rejected',
+        status: 'rejected',
         rejectedAt: new Date(),
-        rejectedBy: userProfile.uid
+        rejectedBy: user?.uid
       });
 
       if (result.success) {
@@ -251,7 +237,7 @@ export default function UserManagement() {
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => (
-                  <TableRow key={user.uid}>
+                  <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.displayName}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{getRoleBadge(user.role)}</TableCell>

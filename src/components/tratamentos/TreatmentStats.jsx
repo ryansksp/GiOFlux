@@ -10,7 +10,7 @@ export default function TreatmentStats({ tratamentos, loading }) {
 
   const stats = [
     {
-      title: "Total de Tratamentos",
+      title: "Total de Procedimentos",
       value: totalTratamentos,
       icon: Activity,
       gradient: "from-purple-500 to-purple-600"

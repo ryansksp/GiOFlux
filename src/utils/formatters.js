@@ -32,7 +32,13 @@ export const formatDate = (date, includeTime = false) => {
 
   if (!date) return '-';
 
-  
+  const dateObj = new Date(date);
+
+  // Verificar se a data é válida
+
+  if (isNaN(dateObj.getTime())) return '-';
+
+
 
   const options = {
 
@@ -52,9 +58,9 @@ export const formatDate = (date, includeTime = false) => {
 
   };
 
-  
 
-  return new Intl.DateTimeFormat('pt-BR', options).format(new Date(date));
+
+  return new Intl.DateTimeFormat('pt-BR', options).format(dateObj);
 
 };
 

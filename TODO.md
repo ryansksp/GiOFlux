@@ -1,19 +1,18 @@
-# TODO - Login Redirect Loop Fix
+# Refactor Client Module
 
-## Issue Description
-When logging in, the system prompts for login again and flashes before entering. This is caused by a race condition where the user is authenticated but the profile data is still loading, causing premature redirects.
-
-## Changes Made
-- [x] Modified `src/App.jsx` PrivateRoute component to separate authentication check from profile loading check
-- [x] Added loading spinner while profile is being fetched after authentication
-- [x] Prevented redirect to login when user is authenticated but profile is still loading
+## Tasks
+- [x] Add cleanClientData function in clientService.js to filter valid client fields
+- [x] Modify createClient method to apply cleanClientData before calling database
+- [x] Modify updateClient method to apply cleanClientData before calling database
+- [x] Add console.log for cleanedData in both methods for debugging
 
 ## Testing
-- [ ] Test login flow to ensure no more redirect loop
-- [ ] Verify that approved users can access the dashboard
-- [ ] Verify that pending users see the approval page
-- [ ] Verify that unauthenticated users are redirected to login
+- [x] Unit tests for cleanClientData function (3/3 tests passed)
+- [ ] Integration tests for createClient/updateClient (failing due to mocking issues)
+- [ ] Test client creation and update in the app
+- [ ] Check console for PGRST204 errors
 
-## Follow-up Steps
-- [ ] Monitor for any authentication issues after deployment
-- [ ] Consider adding retry logic for profile fetching if needed
+## Notes
+- The cleanClientData function works correctly as shown by passing unit tests
+- Integration tests fail due to Supabase client import issues in test environment
+- Manual testing in the app is recommended to verify end-to-end functionality

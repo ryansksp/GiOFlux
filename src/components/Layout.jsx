@@ -30,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import UserBadge from "./common/UserBadge";
+import PendingUsersNotification from "./common/PendingUsersNotification";
 import { canAccessFinancial } from "../utils/formatters";
 
 const allNavigationItems = [
@@ -53,7 +54,7 @@ const allNavigationItems = [
   },
   {
     title: "Procedimentos",
-    url: createPageUrl("Tratamentos"),
+    url: createPageUrl("Procedimentos"),
     icon: Activity,
     requiredRole: "consultora"
   },
@@ -69,6 +70,12 @@ const allNavigationItems = [
     icon: DollarSign,
     requiredRole: "gerente"
   },
+  {
+    title: "Gerenciar Usuários",
+    url: createPageUrl("UserManagement"),
+    icon: Users,
+    requiredRole: "admin"
+  },
 ];
 
 
@@ -76,7 +83,7 @@ const allNavigationItems = [
 export default function Layout({ children }) {
 
   const location = useLocation();
-  const { userProfile, signOut } = useAuth();
+  const { user, userProfile, signOut } = useAuth();
 
   const [navigationItems, setNavigationItems] = useState([]);
 
@@ -162,9 +169,7 @@ export default function Layout({ children }) {
 
               <div>
 
-                <h2 className="font-bold text-xl bg-gradient-to-r from-[#823a80] to-[#c43c8b] bg-clip-text text-transparent">GioFlux</h2>
-
-                <p className="text-xs text-gray-500">by GiOlaser</p>
+                <h2 className="font-bold text-xl bg-gradient-to-r from-[#823a80] to-[#c43c8b] bg-clip-text text-transparent">SyncFlux</h2>
 
               </div>
 
@@ -242,7 +247,7 @@ export default function Layout({ children }) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-gray-900 truncate">{userProfile.displayName || 'Usuário'}</p>
+                    <p className="font-medium text-sm text-gray-900 truncate">{userProfile.displayName || user?.displayName || 'Usuário'}</p>
                     <p className="text-xs text-gray-500 truncate">{userProfile.email}</p>
                   </div>
                 </div>
@@ -291,7 +296,7 @@ export default function Layout({ children }) {
 
                 </SidebarTrigger>
 
-                <h1 className="text-xl font-bold bg-gradient-to-r from-[#823a80] to-[#c43c8b] bg-clip-text text-transparent">GioFlux</h1>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-[#823a80] to-[#c43c8b] bg-clip-text text-transparent">SyncFlux</h1>
 
               </div>
 
@@ -304,9 +309,7 @@ export default function Layout({ children }) {
 
 
           <div className="flex-1 overflow-auto">
-
             {children}
-
           </div>
 
         </main>

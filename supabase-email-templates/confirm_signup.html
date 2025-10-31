@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirme sua conta - SyncFlux</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #823a80 0%, #c43c8b 50%, #e91e63 100%);
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="50" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="30" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .logo {
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .logo-text {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .welcome-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #823a80, #c43c8b);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(130, 58, 128, 0.3);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #823a80 0%, #c43c8b 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 8px 24px rgba(130, 58, 128, 0.3);
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+            border: 2px solid transparent;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(130, 58, 128, 0.4);
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+            margin: 32px 0;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .info-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #823a80;
+            margin-bottom: 12px;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-list li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .info-list li::before {
+            content: '✓';
+            color: #c43c8b;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .footer {
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 32px 30px;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .footer-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            color: #cccccc;
+            margin-bottom: 16px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+
+        .footer-link {
+            color: #c43c8b;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
+        .copyright {
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #333;
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .footer {
+                padding: 24px 20px;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L13.09 8.26L19 9L13.09 9.74L12 16L10.91 9.74L5 9L10.91 8.26L12 2Z" fill="white"/>
+                        <path d="M3 17L4.09 20.26L7 21L4.09 21.74L3 25L1.91 21.74L-1 21L1.91 20.26L3 17Z" fill="white" opacity="0.7"/>
+                        <path d="M21 17L22.09 20.26L25 21L22.09 21.74L21 25L19.91 21.74L17 21L19.91 20.26L21 17Z" fill="white" opacity="0.7"/>
+                    </svg>
+                </div>
+                <div class="logo-text">SyncFlux</div>
+                <div class="logo-subtitle">Sistema de Gestão para Clínicas de Estética</div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="welcome-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+
+            <h1 class="title">Bem-vindo ao SyncFlux! 🎉</h1>
+
+            <p class="subtitle">
+                Obrigado por se cadastrar! Estamos empolgados em ter você conosco.
+                Para começar a usar sua conta, confirme seu email clicando no botão abaixo.
+            </p>
+
+            <a href="{{ .ConfirmationURL }}" class="cta-button">
+                ✅ Confirmar meu email
+            </a>
+
+            <div class="divider"></div>
+
+            <div class="info-section">
+                <h3 class="info-title">O que você pode fazer após confirmar:</h3>
+                <ul class="info-list">
+                    <li>Gerenciar seus clientes e agendamentos</li>
+                    <li>Acompanhar finanças e relatórios</li>
+                    <li>Criar campanhas de marketing</li>
+                    <li>Acessar ferramentas de gestão completas</li>
+                    <li>Sincronizar dados em tempo real</li>
+                </ul>
+            </div>
+
+            <p style="font-size: 14px; color: #888; margin-top: 24px;">
+                Se você não solicitou esta conta, pode ignorar este email com segurança.
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-content">
+                <h4 class="footer-title">SyncFlux</h4>
+                <p class="footer-text">
+                    A solução completa para gestão de clínicas de estética.
+                    Simplifique seus processos e foque no que realmente importa: seus clientes.
+                </p>
+
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Website</a>
+                    <a href="#" class="footer-link">Suporte</a>
+                    <a href="#" class="footer-link">Política de Privacidade</a>
+                </div>
+
+                <div class="copyright">
+                    © 2024 SyncFlux. Todos os direitos reservados.<br>
+                    Este é um email automático, por favor não responda.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

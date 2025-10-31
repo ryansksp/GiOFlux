@@ -11,7 +11,7 @@ import { Camera, Save, User, CheckCircle, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Perfil() {
-  const { userProfile, updateProfile, loading: authLoading } = useAuth();
+  const { user, userProfile, updateProfile, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     displayName: '',
     email: '',
@@ -25,13 +25,13 @@ export default function Perfil() {
   useEffect(() => {
     if (userProfile) {
       setFormData({
-        displayName: userProfile.displayName || '',
-        email: userProfile.email || '',
+        displayName: userProfile.displayName || user?.displayName || '',
+        email: userProfile.email || user?.email || '',
         phone: userProfile.phone || '',
         bio: userProfile.bio || ''
       });
     }
-  }, [userProfile]);
+  }, [userProfile, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

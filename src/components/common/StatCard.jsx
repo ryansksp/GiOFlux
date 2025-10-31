@@ -10,7 +10,8 @@ export default function StatCard({ title, value, icon: Icon, gradient, loading, 
     return (
       <Card className="border-purple-100">
         <CardContent className="p-6">
-          <Skeleton className="h-20 w-full" />
+          <div className="text-sm text-gray-500">Carregando...</div>
+          <Skeleton className="h-20 w-full mt-2" />
         </CardContent>
       </Card>
     );
@@ -24,7 +25,7 @@ export default function StatCard({ title, value, icon: Icon, gradient, loading, 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="border-purple-100 hover:shadow-lg transition-all duration-300 overflow-hidden relative group">
+      <Card className={`border-purple-100 hover:shadow-lg transition-all duration-300 overflow-hidden relative group ${gradient ? `bg-gradient-to-br from-blue-500 to-blue-600` : ''}`}>
         <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
         <CardContent className="p-6">
           <div className="flex justify-between items-start mb-4">

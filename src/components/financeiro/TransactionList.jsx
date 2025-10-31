@@ -15,11 +15,17 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { formatCurrency } from "../../utils/formatters";
 
-export default function TransactionList({ transacoes, loading, onEdit }) {
+export default function TransactionList({ transacoes, loading, onEdit, clientes = [] }) {
   const statusColors = {
     pendente: "bg-yellow-100 text-yellow-800",
     confirmado: "bg-green-100 text-green-800",
     cancelado: "bg-red-100 text-red-800",
+  };
+
+  const getClientName = (clienteId) => {
+    if (!clienteId) return "-";
+    const client = clientes.find(c => c.id === clienteId);
+    return client?.nome_completo || "Cliente não encontrado";
   };
 
   const formatDate = (dataTransacao) => {
@@ -54,6 +60,7 @@ export default function TransactionList({ transacoes, loading, onEdit }) {
             <TableHeader>
               <TableRow>
                 <TableHead>Data</TableHead>
+                <TableHead>Cliente</TableHead>
                 <TableHead>Descrição</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Valor</TableHead>
@@ -68,6 +75,9 @@ export default function TransactionList({ transacoes, loading, onEdit }) {
                   className="hover:bg-purple-50 transition-colors"
                 >
                   <TableCell>{formatDate(transacao.data_transacao)}</TableCell>
+                  <TableCell className="font-medium">
+                    {getClientName(transacao.cliente_id)}
+                  </TableCell>
                   <TableCell className="font-medium">
                     {transacao.descricao || "-"}
                   </TableCell>

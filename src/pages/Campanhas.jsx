@@ -15,13 +15,13 @@ export default function Campanhas() {
   const [showForm, setShowForm] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState(null);
 
-  const { userProfile } = useAuth();
+  const { user, userProfile } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: campanhas = [], isLoading } = useQuery({
     queryKey: ['campanhas'],
     queryFn: async () => {
-      const result = await databaseService.getCampaigns(userProfile?.uid, { orderBy: 'created_date', orderDirection: 'desc' });
+      const result = await databaseService.getCampaigns(user?.uid, { orderBy: 'created_at', orderDirection: 'desc' });
       return result.success ? result.data : [];
     },
     initialData: [],
@@ -29,7 +29,7 @@ export default function Campanhas() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => databaseService.createCampaign({ ...data, userId: userProfile?.uid }),
+    mutationFn: (data) => databaseService.createCampaign({ ...data, userId: user?.uid }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['campanhas'] });
       setShowForm(false);

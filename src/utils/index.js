@@ -1,4 +1,11 @@
 // Função para criar URLs de páginas
 export const createPageUrl = (pageName) => {
-  return `/${pageName.toLowerCase()}`;
+  // Mapeamento especial para páginas que mudaram de nome
+  const pageMapping = {
+    'Tratamentos': 'procedimentos',
+    'Tratamento': 'procedimento'
+  };
+
+  const mappedName = pageMapping[pageName] || pageName.toLowerCase();
+  return `/${mappedName}`;
 };

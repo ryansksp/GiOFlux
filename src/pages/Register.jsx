@@ -164,7 +164,7 @@ export default function Register() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full mb-4">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">GioFlux</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">SyncFlux</h1>
           <p className="text-white/80">Criar nova conta</p>
         </div>
 

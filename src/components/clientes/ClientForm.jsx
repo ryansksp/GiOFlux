@@ -20,7 +20,37 @@ import { motion } from "framer-motion";
 
 export default function ClientForm({ client, onSubmit, onCancel, isLoading }) {
 
-  const [formData, setFormData] = useState(client || {
+  const [formData, setFormData] = useState(client ? {
+
+    nome_completo: client.nome_completo || "",
+
+    email: client.email || "",
+
+    telefone: client.telefone || "",
+
+    data_nascimento: client.data_nascimento || "",
+
+    cpf: client.cpf || "",
+
+    endereco: client.endereco || "",
+
+    numero: client.numero || "",
+
+    cidade: client.cidade || "",
+
+    estado: client.estado || "",
+
+    cep: client.cep || "",
+
+    tipo_pele: client.tipo_pele || "",
+
+    observacoes: client.observacoes || "",
+
+    status: client.status || "lead",
+
+    origem: client.origem || "site"
+
+  } : {
 
     nome_completo: "",
 
@@ -89,11 +119,9 @@ export default function ClientForm({ client, onSubmit, onCancel, isLoading }) {
   };
 
   const handleSubmit = (e) => {
-
     e.preventDefault();
-
+    console.log('Formulário enviado com dados:', formData);
     onSubmit(formData);
-
   };
 
 

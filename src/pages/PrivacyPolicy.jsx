@@ -25,7 +25,7 @@ export default function PrivacyPolicy() {
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Política de Privacidade</h1>
-          <p className="text-white/80">GioFlux - Sistema de Gestão para Consultoras</p>
+          <p className="text-white/80">SyncFlux - Sistema de Gestão para Consultoras</p>
         </div>
 
         <Card className="backdrop-blur-sm bg-white/95 border-0 shadow-2xl">
@@ -40,7 +40,7 @@ export default function PrivacyPolicy() {
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Introdução</h2>
               <p className="mb-3">
-                Bem-vindo ao GioFlux, um sistema de gestão desenvolvido especificamente para consultoras de beleza e estética.
+                Bem-vindo ao SyncFlux, um sistema de gestão desenvolvido especificamente para consultoras de beleza e estética.
                 Esta Política de Privacidade descreve como coletamos, usamos, armazenamos e protegemos suas informações pessoais
                 em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).
               </p>
@@ -148,7 +148,7 @@ export default function PrivacyPolicy() {
                 Para exercer seus direitos ou esclarecer dúvidas sobre esta política:
               </p>
               <div className="bg-gray-50 p-3 rounded-lg">
-                <p className="text-sm font-medium">Email: privacidade@gioflux.com</p>
+                <p className="text-sm font-medium">Email: privacidade@syncflux.com</p>
                 <p className="text-sm">Resposta em até 15 dias úteis</p>
               </div>
             </div>

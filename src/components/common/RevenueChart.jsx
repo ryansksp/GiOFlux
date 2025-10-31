@@ -35,7 +35,7 @@ export default function RevenueChart({ transacoes = [], loading }) {
   const quinzeDiasAtras = subDays(now, 14); // Últimos 15 dias, incluindo hoje
   const days = eachDayOfInterval({ start: quinzeDiasAtras, end: now });
 
-  console.log("Transações recebidas no gráfico:", transacoes); // Log para depuração
+
 
   const chartData = days.map((day) => {
     // Filtra as transações que ocorreram no dia específico

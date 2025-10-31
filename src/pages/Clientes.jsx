@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Filter, ArrowUpDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
+import { LoadingCard } from "../components/ui/loading";
 
 import ClientForm from "../components/clientes/ClientForm";
 import ClientCard from "../components/clientes/ClientCard";
@@ -22,7 +23,7 @@ export default function Clientes() {
   const [filterStatus, setFilterStatus] = useState("todos");
   const [sortBy, setSortBy] = useState("data-desc");
 
-  const { userProfile } = useAuth();
+  const { user, userProfile } = useAuth();
   const queryClient = useQueryClient();
 
   const getOrderBy = (sortOption) => {
@@ -43,7 +44,7 @@ export default function Clientes() {
     queryKey: ['clientes', sortBy],
     queryFn: async () => {
       // Sempre buscar sem ordenação do Firestore primeiro
-      const result = await databaseService.getClients(userProfile?.uid, {});
+      const result = await databaseService.getClients(user?.uid, {});
       if (result.success) {
         // Sempre aplicar ordenação local
         let sortedData = [...result.data];
@@ -79,11 +80,18 @@ export default function Clientes() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => databaseService.createClient({ ...data, userId: userProfile?.uid }),
-    onSuccess: () => {
+    mutationFn: (data) => {
+      console.log('Enviando dados para criação:', { ...data, user_id: user?.uid });
+      return databaseService.createClient({ ...data, user_id: user?.uid });
+    },    
+    onSuccess: (result) => {
+      console.log('Cliente criado com sucesso:', result);
       queryClient.invalidateQueries({ queryKey: ['clientes'] });
       setShowForm(false);
       setEditingClient(null);
+    },
+    onError: (error) => {
+      console.error('Erro ao criar cliente:', error);
     },
   });
 
@@ -98,9 +106,12 @@ export default function Clientes() {
   });
 
   const handleSubmit = (data) => {
+    console.log('Dados do formulário:', data);
     if (editingClient) {
+      console.log('Atualizando cliente:', editingClient.id);
       updateMutation.mutate({ id: editingClient.id, data });
     } else {
+      console.log('Criando novo cliente');
       createMutation.mutate(data);
     }
   };
@@ -260,25 +271,22 @@ export default function Clientes() {
 
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-        <AnimatePresence>
-
-          {filteredClientes.map((cliente) => (
-
-            <ClientCard
-
-              key={cliente.id}
-
-              client={cliente}
-
-              onClick={() => setSelectedClient(cliente)}
-
-            />
-
-          ))}
-
-        </AnimatePresence>
-
+        {isLoading ? (
+          // Loading skeleton cards
+          Array.from({ length: 6 }).map((_, i) => (
+            <LoadingCard key={i} />
+          ))
+        ) : (
+          <AnimatePresence>
+            {filteredClientes.map((cliente) => (
+              <ClientCard
+                key={cliente.id}
+                client={cliente}
+                onClick={() => setSelectedClient(cliente)}
+              />
+            ))}
+          </AnimatePresence>
+        )}
       </div>
 
 

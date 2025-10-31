@@ -12,13 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import { X, Save } from "lucide-react";
+import { X, Save, User } from "lucide-react";
 
 import { motion } from "framer-motion";
 
 
 
-export default function TransactionForm({ transaction, onSubmit, onCancel, isLoading }) {
+export default function TransactionForm({ transaction, onSubmit, onCancel, isLoading, clientes = [] }) {
 
   const [formData, setFormData] = useState(transaction || {
 
@@ -34,7 +34,9 @@ export default function TransactionForm({ transaction, onSubmit, onCancel, isLoa
 
     status: "confirmado",
 
-    categoria: "tratamento"
+    categoria: "tratamento",
+
+    cliente_id: ""
 
   });
 
@@ -89,6 +91,48 @@ export default function TransactionForm({ transaction, onSubmit, onCancel, isLoa
           <CardContent className="p-6 space-y-4">
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div className="space-y-2">
+
+                <Label htmlFor="cliente_id" className="flex items-center gap-2">
+
+                  <User className="w-4 h-4" />
+
+                  Cliente
+
+                </Label>
+
+                <Select
+
+                  value={formData.cliente_id}
+
+                  onValueChange={(value) => setFormData({...formData, cliente_id: value})}
+
+                >
+
+                  <SelectTrigger className="border-purple-200">
+
+                    <SelectValue placeholder="Selecione um cliente (opcional)" />
+
+                  </SelectTrigger>
+
+                  <SelectContent>
+
+                    {clientes.map(cliente => (
+
+                      <SelectItem key={cliente.id} value={cliente.id}>
+
+                        {cliente.nome_completo}
+
+                      </SelectItem>
+
+                    ))}
+
+                  </SelectContent>
+
+                </Select>
+
+              </div>
 
               <div className="space-y-2">
 
@@ -224,7 +268,7 @@ export default function TransactionForm({ transaction, onSubmit, onCancel, isLoa
 
                   <SelectContent>
 
-                    <SelectItem value="tratamento">Tratamento</SelectItem>
+                    <SelectItem value="tratamento">Procedimento</SelectItem>
 
                     <SelectItem value="produto">Produto</SelectItem>
 

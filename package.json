@@ -1,5 +1,5 @@
 {
-  "name": "gioflux",
+  "name": "syncflux",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -16,11 +16,14 @@
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "@sentry/react": "^10.22.0",
+    "@sentry/tracing": "^7.120.4",
+    "@supabase/supabase-js": "^2.76.1",
     "@tanstack/react-query": "^5.17.15",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.3.1",
-    "firebase": "^12.4.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
@@ -31,6 +34,9 @@
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
@@ -39,8 +45,10 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "jsdom": "^27.0.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
-    "vite": "^5.0.8"
+    "vite": "^5.0.8",
+    "vitest": "^4.0.3"
   }
 }

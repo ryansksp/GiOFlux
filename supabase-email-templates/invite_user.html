@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convite para o SyncFlux</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #823a80 0%, #c43c8b 50%, #e91e63 100%);
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="50" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="30" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .logo {
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .logo-text {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .invite-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #823a80, #c43c8b);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(130, 58, 128, 0.3);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .inviter-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .inviter-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .inviter-name {
+            font-size: 16px;
+            color: #823a80;
+            font-weight: 600;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #823a80 0%, #c43c8b 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 8px 24px rgba(130, 58, 128, 0.3);
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+            border: 2px solid transparent;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(130, 58, 128, 0.4);
+        }
+
+        .features-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .features-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #823a80;
+            margin-bottom: 16px;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .features-list li::before {
+            content: '🚀';
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+            margin: 32px 0;
+        }
+
+        .footer {
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 32px 30px;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .footer-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            color: #cccccc;
+            margin-bottom: 16px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+
+        .footer-link {
+            color: #c43c8b;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
+        .copyright {
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #333;
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+
+        .expiry-notice {
+            font-size: 12px;
+            color: #888;
+            margin-top: 16px;
+            font-style: italic;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .footer {
+                padding: 24px 20px;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .inviter-info {
+                padding: 16px;
+            }
+
+            .features-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21M12 11C13.6569 11 15 9.65685 15 8C15 6.34315 13.6569 5 12 5C10.3431 5 9 6.34315 9 8C9 9.65685 10.3431 11 12 11ZM20 8V14M23 11H17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="logo-text">SyncFlux</div>
+                <div class="logo-subtitle">Sistema de Gestão para Clínicas de Estética</div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="invite-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21M12 11C13.6569 11 15 9.65685 15 8C15 6.34315 13.6569 5 12 5C10.3431 5 9 6.34315 9 8C9 9.65685 10.3431 11 12 11ZM20 8V14M23 11H17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+
+            <h1 class="title">Você foi convidado! 🎉</h1>
+
+            <p class="subtitle">
+                Você recebeu um convite especial para fazer parte do SyncFlux,
+                a solução completa para gestão de clínicas de estética.
+            </p>
+
+            <div class="inviter-info">
+                <div class="inviter-label">Convidado por:</div>
+                <div class="inviter-name">{{ .InvitedByEmail }}</div>
+            </div>
+
+            <a href="{{ .ConfirmationURL }}" class="cta-button">
+                🚀 Aceitar convite e criar conta
+            </a>
+
+            <div class="features-section">
+                <h3 class="features-title">O que você terá acesso:</h3>
+                <ul class="features-list">
+                    <li>Gerenciamento completo de clientes</li>
+                    <li>Agendamento inteligente de consultas</li>
+                    <li>Controle financeiro e relatórios</li>
+                    <li>Criação de campanhas de marketing</li>
+                    <li>Dashboard com métricas em tempo real</li>
+                    <li>Suporte técnico dedicado</li>
+                </ul>
+            </div>
+
+            <div class="divider"></div>
+
+            <p style="font-size: 14px; color: #888; margin-bottom: 16px;">
+                Este convite é pessoal e intransferível. Se você não conhece quem enviou,
+                pode ignorar este email com segurança.
+            </p>
+
+            <p style="font-size: 14px; color: #888;">
+                Ao aceitar o convite, você concorda com nossos termos de uso e política de privacidade.
+            </p>
+
+            <p class="expiry-notice">
+                Link válido até: {{ .ExpiresAt }}
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-content">
+                <h4 class="footer-title">SyncFlux</h4>
+                <p class="footer-text">
+                    A solução completa para gestão de clínicas de estética.
+                    Simplifique seus processos e foque no que realmente importa: seus clientes.
+                </p>
+
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Website</a>
+                    <a href="#" class="footer-link">Suporte</a>
+                    <a href="#" class="footer-link">Política de Privacidade</a>
+                </div>
+
+                <div class="copyright">
+                    © 2024 SyncFlux. Todos os direitos reservados.<br>
+                    Este é um email automático, por favor não responda.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

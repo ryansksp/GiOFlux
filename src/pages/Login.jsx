@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Sparkles, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Sparkles, Mail, Lock, Eye, EyeOff, Clock, AlertCircle } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -15,9 +15,32 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [resetMode, setResetMode] = useState(false);
+  const [showPendingNotification, setShowPendingNotification] = useState(false);
 
-  const { signIn, resetPassword } = useAuth();
+  const { signIn, resetPassword, userProfile } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Mostrar notificação se usuário estiver pendente
+    if (userProfile && userProfile.role === 'pending' && userProfile.status === 'pending') {
+      setShowPendingNotification(true);
+    } else {
+      setShowPendingNotification(false);
+    }
+  }, [userProfile]);
+
+  // Forçar refresh do perfil quando o componente montar
+  useEffect(() => {
+    // Sempre verificar o perfil atual quando o componente monta
+    const timer = setTimeout(() => {
+      if (userProfile && userProfile.role === 'pending' && userProfile.status === 'pending') {
+        setShowPendingNotification(true);
+      } else {
+        setShowPendingNotification(false);
+      }
+    }, 1000); // Aumentei para 1 segundo para dar mais tempo
+    return () => clearTimeout(timer);
+  }, [userProfile]); // Adicionei userProfile como dependência
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,13 +53,19 @@ export default function Login() {
         setError('Email de redefinição enviado! Verifique sua caixa de entrada.');
         setResetMode(false);
       } else {
-        await signIn(email, password);
-        navigate('/dashboard');
+        const result = await signIn(email, password);
+        // O redirecionamento será feito pelo AuthContext baseado no status de aprovação
+        console.log('Login result:', result);
+        // Usuários podem fazer login normalmente, apenas veem notificação se estiverem pendentes
       }
     } catch (error) {
       console.error('Erro no login:', error);
       let errorMessage = 'Erro ao fazer login. Tente novamente.';
-      if (error.message && error.message.includes('verifique seu email')) {
+      if (error.message && error.message.includes('Email ou senha incorretos')) {
+        errorMessage = 'Email ou senha incorretos. Tente novamente.';
+      } else if (error.message && error.message.includes('Email não confirmado')) {
+        errorMessage = 'Email não confirmado. Verifique sua caixa de entrada e clique no link de confirmação.';
+      } else if (error.message && error.message.includes('verifique seu email')) {
         errorMessage = error.message;
       } else if (error.code === 'auth/user-not-found') {
         errorMessage = 'Usuário não encontrado. Verifique o email digitado.';
@@ -65,7 +94,7 @@ export default function Login() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full mb-4">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">GioFlux</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">SyncFlux</h1>
           <p className="text-white/80">Sistema de Gestão para Clínicas de Estética</p>
         </div>
 
@@ -125,9 +154,21 @@ export default function Login() {
                 </div>
               )}
 
+              {/* Notificação de conta pendente */}
+              {showPendingNotification && (
+                <Alert className="border-yellow-200 bg-yellow-50">
+                  <Clock className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-yellow-800">
+                    <strong>Conta Pendente de Aprovação</strong><br />
+                    Sua conta foi criada com sucesso, mas precisa ser aprovada por um administrador do sistema.
+                    Você receberá um email quando sua conta for ativada.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {error && (
-                <Alert className={error.includes('enviado') || error.includes('verifique') ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
-                  <AlertDescription className={error.includes('enviado') || error.includes('verifique') ? 'text-green-800' : 'text-red-800'}>
+                <Alert className={error.includes('enviado') || error.includes('verifique') || error.includes('confirmação') ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
+                  <AlertDescription className={error.includes('enviado') || error.includes('verifique') || error.includes('confirmação') ? 'text-green-800' : 'text-red-800'}>
                     {error}
                   </AlertDescription>
                 </Alert>
