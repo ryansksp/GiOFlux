@@ -29,7 +29,12 @@ static VALID_CLIENT_FIELDS = [
     const cleanedData = {};
     for (const [key, value] of Object.entries(clientData)) {
       if (ClientService.VALID_CLIENT_FIELDS.includes(key)) {
-        cleanedData[key] = value;
+        // Convert empty strings to null for date fields
+        if (key === 'data_nascimento' && value === '') {
+          cleanedData[key] = null;
+        } else {
+          cleanedData[key] = value;
+        }
       }
     }
     console.log('Cleaned client data:', cleanedData);

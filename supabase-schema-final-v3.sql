@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create admin_roles table (no RLS to avoid recursion)
+-- Create admin_roles table
 CREATE TABLE IF NOT EXISTS admin_roles (
     user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     role user_role NOT NULL CHECK (role IN ('admin', 'gerente')),
@@ -199,6 +199,7 @@ CREATE INDEX IF NOT EXISTS idx_campaigns_status ON campaigns(status);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE treatments ENABLE ROW LEVEL SECURITY;
@@ -214,7 +215,7 @@ BEGIN
         WHERE user_id = p_user_id
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Grant execute permission to authenticated users
 GRANT EXECUTE ON FUNCTION public.is_admin_or_gerente(UUID) TO authenticated;
@@ -267,7 +268,7 @@ BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ language 'plpgsql' SET search_path = public;
 
 -- Triggers para 'updated_at'
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -297,7 +298,7 @@ BEGIN
     ON CONFLICT (id) DO NOTHING;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
